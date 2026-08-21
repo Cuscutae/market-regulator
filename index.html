@@ -7,7 +7,7 @@
 <title>市场监管模拟器</title>
 <style>
   :root{
-    --ink:#172724; --ink2:#5b6b66; --paper:#f4efe5; --green:#173f39; --green2:#24584f;
+    --ink:#172724; --ink2:#56655f; --paper:#f4efe5; --green:#173f39; --green2:#24584f;
     --green3:#dce8e1; --red:#ba3e32; --reddark:#8f2d25; --gold:#c4933e; --goldsoft:#efe0b8;
     --line:rgba(23,63,57,.14); --shadow:0 14px 44px rgba(23,39,36,.10); --r:20px;
   }
@@ -17,7 +17,7 @@
   button{font:inherit;border:0;cursor:pointer;color:inherit}
   button:focus-visible{outline:3px solid rgba(196,147,62,.5);outline-offset:2px}
   .hidden{display:none !important}
-  .wrap{width:min(600px,calc(100% - 22px));margin:0 auto}
+  .wrap{width:min(620px,calc(100% - 22px));margin:0 auto}
   .topbar{position:sticky;top:0;z-index:30;min-height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid var(--line);background:rgba(244,239,229,.92);backdrop-filter:blur(12px)}
   .brand{display:flex;align-items:center;gap:10px;font-weight:850}
   .seal{width:32px;height:32px;display:grid;place-items:center;color:#fff;background:var(--red);border-radius:9px 9px 9px 4px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.22);font-family:STKaiti,KaiTi,serif;font-size:17px;transform:rotate(-2deg)}
@@ -25,142 +25,166 @@
   .eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--red);font-size:12px;font-weight:900;letter-spacing:.14em}
   .eyebrow::before{content:"";width:20px;height:2px;background:currentColor}
   .opening{padding:24px 0 40px}
-  .opening h1{margin:14px 0 8px;font-size:32px;line-height:1.08;letter-spacing:-.03em;font-weight:900}
+  .opening h1{margin:14px 0 8px;font-size:32px;line-height:1.1;letter-spacing:-.03em;font-weight:900}
   .opening h1 em{color:var(--green);font-style:normal}
-  .intro{color:var(--ink2);font-size:14px;line-height:1.8;margin:0}
+  .intro{color:var(--ink2);font-size:15px;line-height:1.85;margin:0}
   .intro .os{color:#8a7a63;font-style:italic}
   .sec-head{display:flex;align-items:end;justify-content:space-between;margin:26px 0 12px}
-  .sec-head h2{margin:0;font-size:20px;letter-spacing:-.02em}
-  .sec-head p{margin:3px 0 0;color:var(--ink2);font-size:12px}
+  .sec-head h2{margin:0;font-size:21px;letter-spacing:-.02em}
+  .sec-head p{margin:3px 0 0;color:var(--ink2);font-size:13px}
   .persona-grid{display:grid;gap:10px}
   .persona-card{position:relative;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.86);text-align:left;box-shadow:0 5px 16px rgba(23,39,36,.04)}
   .persona-card.selected{border-color:rgba(23,63,57,.5);background:#fff;box-shadow:var(--shadow)}
-  .persona-card i{font-style:normal;font-size:24px}
-  .persona-card b{display:block;margin:8px 0 3px;font-size:17px}
-  .persona-card .tag{color:var(--red);font-size:12px;font-weight:800}
-  .persona-card p{margin:6px 0 0;color:var(--ink2);font-size:13px;line-height:1.55}
-  /* shop */
-  .shop-bar{position:sticky;top:56px;z-index:25;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);background:rgba(244,239,229,.92);backdrop-filter:blur(12px)}
-  .shop-bar b{font:700 20px Georgia,serif;color:var(--green)}
-  .shop-bar span{color:var(--ink2);font-size:12px}
+  .persona-card i{font-style:normal;font-size:26px}
+  .persona-card b{display:block;margin:8px 0 3px;font-size:18px}
+  .persona-card .tag{color:var(--red);font-size:13px;font-weight:800}
+  .persona-card p{margin:6px 0 0;color:var(--ink2);font-size:14px;line-height:1.6}
+  .shop-bar{position:sticky;top:56px;z-index:25;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 14px;border-bottom:1px solid var(--line);background:rgba(244,239,229,.94);backdrop-filter:blur(12px)}
+  .shop-bar b{font:700 22px Georgia,serif;color:var(--green)}
+  .shop-bar span{color:var(--ink2);font-size:13px}
   .ability-grid{display:grid;gap:10px;margin-top:16px}
-  .ability-card{position:relative;padding:15px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.86);text-align:left;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:start}
+  .ability-card{position:relative;padding:16px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.86);text-align:left;display:grid;grid-template-columns:48px 1fr auto;gap:13px;align-items:start}
   .ability-card.owned{border-color:var(--gold);background:#fff;box-shadow:0 8px 20px rgba(23,39,36,.08)}
   .ability-card:disabled{opacity:.42}
-  .ability-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;background:var(--green3);font-size:22px}
-  .ability-card .info b{display:block;font-size:15px}
-  .ability-card .info .unlock{display:block;margin-top:5px;color:var(--green);font-size:12px;font-weight:800;line-height:1.4}
-  .ability-card .info p{margin:5px 0 0;color:var(--ink2);font-size:12px;line-height:1.5}
+  .ability-icon{width:48px;height:48px;display:grid;place-items:center;border-radius:13px;background:var(--green3);font-size:24px}
+  .ability-card .info b{display:block;font-size:16px}
+  .ability-card .info .unlock{display:block;margin-top:5px;color:var(--green);font-size:13px;font-weight:800;line-height:1.45}
+  .ability-card .info p{margin:6px 0 0;color:var(--ink2);font-size:14px;line-height:1.6}
   .ability-cost{text-align:right;flex:none}
-  .ability-cost b{display:block;color:var(--red);font:700 16px Georgia,serif}
-  .ability-cost span{color:#9a8873;font-size:10px}
-  .ability-cost .got{display:block;margin-top:6px;padding:4px 8px;border-radius:999px;color:#fff;background:var(--gold);font-size:11px;font-weight:900}
-  .start-dock{position:sticky;bottom:12px;z-index:20;margin-top:22px;padding:11px 12px 11px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid rgba(255,255,255,.25);border-radius:18px;color:#fff;background:rgba(23,39,36,.95);box-shadow:0 16px 40px rgba(23,39,36,.28)}
+  .ability-cost b{display:block;color:var(--red);font:700 18px Georgia,serif}
+  .ability-cost span{color:#9a8873;font-size:11px}
+  .ability-cost .got{display:block;margin-top:6px;padding:5px 9px;border-radius:999px;color:#fff;background:var(--gold);font-size:12px;font-weight:900}
+  /* team */
+  .team-slot{display:flex;gap:8px;margin:16px 0 10px}
+  .slot{flex:1;min-height:56px;border:1px dashed var(--line);border-radius:12px;display:grid;place-items:center;color:#9a8873;font-size:12px;background:rgba(255,255,255,.4)}
+  .slot.filled{border-style:solid;border-color:var(--gold);background:var(--goldsoft);color:#6a4c19;font-weight:800}
+  .legend-grid{display:grid;gap:10px}
+  .legend-card{position:relative;padding:16px;border:1px solid var(--line);border-radius:16px;background:#fff;display:grid;grid-template-columns:48px 1fr;gap:13px;align-items:start}
+  .legend-card .avatar{width:48px;height:48px;display:grid;place-items:center;border-radius:13px;background:var(--green3);font-size:24px}
+  .legend-card h3{margin:0 0 2px;font-size:17px}
+  .legend-card .dy{color:var(--green);font-size:12px;font-weight:800}
+  .legend-card .title{color:var(--red);font-size:12px;font-weight:900;margin-left:4px}
+  .legend-card p{margin:7px 0 10px;color:var(--ink2);font-size:14px;line-height:1.6}
+  .legend-card .eff{display:inline-block;padding:5px 9px;border-radius:8px;color:#684d1e;background:var(--goldsoft);font-size:13px;font-weight:800}
+  .legend-card .btn{width:100%;margin-top:2px}
+  .bond-row{margin:12px 0;padding:11px 13px;border-radius:12px;color:#6a4c19;background:var(--goldsoft);font-size:14px;font-weight:800;line-height:1.5}
+  .bond-row.off{color:#9a8873;background:rgba(255,255,255,.5);border:1px dashed var(--line)}
+  .start-dock{position:sticky;bottom:12px;z-index:20;margin-top:22px;padding:12px 13px 12px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid rgba(255,255,255,.25);border-radius:18px;color:#fff;background:rgba(23,39,36,.95);box-shadow:0 16px 40px rgba(23,39,36,.28)}
   .dock-role small{display:block;color:rgba(255,255,255,.55);margin-bottom:2px;font-size:11px}
   .dock-role strong{display:block;font-size:14px}
   .btn{min-height:46px;padding:0 18px;border-radius:13px;font-weight:800;font-size:15px}
   .btn.solid{background:var(--green);color:#fff;box-shadow:0 8px 18px rgba(23,63,57,.2)}
   .btn.solid:disabled{cursor:not-allowed;opacity:.4}
   .btn.gold{background:var(--gold);color:#172724}
+  .btn.ghost{background:rgba(255,255,255,.6);border:1px solid var(--line)}
+  .btn.small{min-height:38px;padding:0 12px;font-size:14px;border-radius:10px}
   /* game */
   #gameScreen{background:#efeadd}
   .game-topbar{position:sticky;top:0;z-index:40;padding:10px 14px 12px;color:#fff;background:var(--green)}
   .game-top-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
   .game-brand{display:flex;align-items:center;gap:9px;min-width:0}
-  .game-brand strong{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .game-brand strong{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .game-brand small{color:rgba(255,255,255,.66);font-size:11px}
-  .score-chip{min-width:70px;padding:6px 10px;border-radius:11px;background:var(--red);text-align:center}
-  .score-chip small{display:block;opacity:.72;font-size:10px}
-  .score-chip b{font:700 20px/1 Georgia,serif}
-  .status-strip{display:flex;gap:7px;margin-top:9px}
-  .status-chip{flex:1;padding:7px 8px;border-radius:10px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.1)}
-  .status-chip span{display:block;color:rgba(255,255,255,.62);font-size:10px}
-  .status-chip b{font:700 16px Georgia,serif}
-  .status-chip.danger b{color:#ffd9a0}
+  .score-chip{min-width:76px;padding:7px 11px;border-radius:11px;background:var(--red);text-align:center}
+  .score-chip small{display:block;opacity:.72;font-size:10px;letter-spacing:.05em}
+  .score-chip b{font:700 22px/1 Georgia,serif}
+  .status-strip{display:flex;gap:8px;margin-top:10px}
+  .status-chip{flex:1;padding:8px 10px;border-radius:11px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.12)}
+  .status-chip span{display:block;color:rgba(255,255,255,.68);font-size:12px}
+  .status-chip b{font:700 19px Georgia,serif}
+  .status-chip.budget b{color:#c8e6c9}
+  .status-chip.energy b{color:#ffe0a8}
+  .status-chip.risk b{color:#ffb3a8}
   .metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}
-  .metric-chip{padding:7px 4px;border-radius:9px;background:rgba(255,255,255,.08);text-align:center}
-  .metric-chip span{display:block;color:rgba(255,255,255,.6);font-size:10px}
-  .metric-chip b{font:700 15px Georgia,serif}
-  .progress-row{display:flex;align-items:center;gap:9px;margin-top:10px;color:rgba(255,255,255,.7);font-size:11px}
+  .metric-chip{padding:8px 4px;border-radius:9px;background:rgba(255,255,255,.08);text-align:center}
+  .metric-chip span{display:block;color:rgba(255,255,255,.62);font-size:12px}
+  .metric-chip b{font:700 17px Georgia,serif}
+  .progress-row{display:flex;align-items:center;gap:9px;margin-top:10px;color:rgba(255,255,255,.7);font-size:12px}
   .progress-bar{flex:1;height:4px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden}
   .progress-bar i{display:block;height:100%;width:0;border-radius:inherit;background:var(--gold);transition:width .4s}
   .game-main{padding:16px 0 40px}
-  .day-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--green3);color:var(--green);font-size:12px;font-weight:800;margin-bottom:10px}
+  .day-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 11px;border-radius:999px;background:var(--green3);color:var(--green);font-size:13px;font-weight:800;margin-bottom:10px}
   .event-card{position:relative;padding:20px 18px;overflow:hidden;border:1px solid var(--line);border-radius:8px 24px 24px 24px;background:rgba(255,255,255,.9);box-shadow:0 12px 36px rgba(23,39,36,.07)}
   .event-card::before{content:"";position:absolute;top:0;left:0;width:5px;height:100%;background:var(--red)}
   .event-card h2{margin:0 0 10px;font-size:23px;line-height:1.28;letter-spacing:-.02em}
-  .os-box{margin:0 0 12px;padding:11px 13px;border-radius:12px;background:#f3ede0;color:#6b5d49;font-size:13px;line-height:1.7}
+  .os-box{margin:0 0 12px;padding:12px 14px;border-radius:12px;background:#f3ede0;color:#6b5d49;font-size:14px;line-height:1.75}
   .os-box .who{color:var(--red);font-weight:900;font-size:11px;letter-spacing:.05em;display:block;margin-bottom:3px}
-  .clues{display:flex;flex-wrap:wrap;gap:6px 13px;margin-bottom:6px;font-size:12px;color:var(--ink2)}
+  .clues{display:flex;flex-wrap:wrap;gap:6px 13px;margin-bottom:6px;font-size:13px;color:var(--ink2)}
   .clues b{color:var(--green)}
   .clues span::before{content:"·";color:var(--gold);margin-right:5px;font-weight:900}
-  .choice-title{margin:18px 0 10px;color:var(--ink2);font-size:13px;font-weight:900}
+  .choice-title{margin:18px 0 10px;color:var(--ink2);font-size:14px;font-weight:900}
   .choices{display:grid;gap:9px}
   .choice{width:100%;padding:14px;display:grid;grid-template-columns:28px 1fr;gap:11px;align-items:start;border:1px solid var(--line);border-radius:15px;background:rgba(250,248,243,.72);text-align:left}
   .choice:active{background:#fff;border-color:rgba(23,63,57,.42)}
   .choice.locked{opacity:.5}
   .choice.unlocked{border-color:var(--gold)}
   .choice-key{width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--green);font:800 12px Georgia,serif}
-  .choice b{display:block;margin-bottom:3px;font-size:15px}
-  .choice .os{color:#8a7a63;font-size:12px;font-style:italic;line-height:1.5;display:block;margin-bottom:7px}
-  .choice .hint{display:block;padding:7px 9px;border-radius:8px;color:#755318;background:var(--goldsoft);font-size:12px;line-height:1.45;font-weight:700}
-  .choice .req-lock{display:block;margin-top:7px;color:var(--red);font-size:12px;font-weight:900}
+  .choice b{display:block;margin-bottom:3px;font-size:16px}
+  .choice .os{color:#8a7a63;font-size:13px;font-style:italic;line-height:1.5;display:block;margin-bottom:7px}
+  .choice .hint{display:block;padding:8px 10px;border-radius:8px;color:#755318;background:var(--goldsoft);font-size:13px;line-height:1.5;font-weight:700}
+  .choice .req-lock{display:block;margin-top:7px;color:var(--red);font-size:13px;font-weight:900}
   .dashboard{margin-top:14px;display:grid;gap:12px}
-  .panel{padding:15px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.72)}
-  .panel-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
-  .panel-title b{font-size:14px}
+  .panel{padding:16px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.72)}
+  .panel-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:13px}
+  .panel-title b{font-size:15px}
   .panel-title span{color:var(--ink2);font-size:10px;letter-spacing:.08em}
-  .metric-list{display:grid;gap:10px}
-  .m-row{display:flex;align-items:center;gap:10px;font-size:13px}
-  .m-row .ic{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:var(--green3);font-size:14px;flex:none}
-  .m-row .nm{width:52px;flex:none;font-weight:800}
-  .m-row .bar{flex:1;height:7px;border-radius:999px;background:#ded8cd;overflow:hidden}
+  .metric-list{display:grid;gap:11px}
+  .m-row{display:flex;align-items:center;gap:10px;font-size:14px}
+  .m-row .ic{width:28px;height:28px;display:grid;place-items:center;border-radius:8px;background:var(--green3);font-size:15px;flex:none}
+  .m-row .nm{width:54px;flex:none;font-weight:800}
+  .m-row .bar{flex:1;height:8px;border-radius:999px;background:#ded8cd;overflow:hidden}
   .m-row .bar i{display:block;height:100%;border-radius:inherit;background:var(--green2);transition:width .5s}
   .m-row .bar i.warn{background:var(--gold)}
   .m-row .bar i.danger{background:var(--red)}
-  .m-row b{font:700 15px Georgia,serif;width:30px;text-align:right;flex:none}
+  .m-row b{font:700 16px Georgia,serif;width:32px;text-align:right;flex:none}
   .perk-chips{display:flex;flex-wrap:wrap;gap:6px}
-  .perk-chip{padding:6px 8px;border-radius:8px;color:#684d1e;background:var(--goldsoft);font-size:12px;font-weight:800}
+  .perk-chip{padding:7px 9px;border-radius:9px;color:#684d1e;background:var(--goldsoft);font-size:13px;font-weight:800}
+  .team-list{display:grid;gap:8px}
+  .team-item{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:11px;background:#edf1ec;font-size:14px}
+  .team-item .ic{font-size:18px}
+  .team-item b{font-size:14px}
+  .team-item span{color:var(--ink2);font-size:12px;margin-left:auto}
+  .bond-tag{margin-top:8px;padding:8px 11px;border-radius:10px;color:#6a4c19;background:var(--goldsoft);font-size:13px;font-weight:800}
   .log{display:grid;gap:9px}
-  .log-item{position:relative;padding-left:15px;color:var(--ink2);font-size:12px;line-height:1.5}
+  .log-item{position:relative;padding-left:15px;color:var(--ink2);font-size:13px;line-height:1.55}
   .log-item::before{content:"";position:absolute;left:0;top:5px;width:6px;height:6px;border:2px solid var(--gold);border-radius:50%;background:#fff}
   .log-item strong{color:var(--ink)}
-  .empty{color:#877b6c;font-size:12px}
+  .empty{color:#877b6c;font-size:13px}
   .overlay{position:fixed;inset:0;z-index:100;padding:16px;display:grid;place-items:center;background:rgba(15,31,28,.64);backdrop-filter:blur(8px);animation:fade .2s ease}
   @keyframes fade{from{opacity:0}}
-  .card{width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;border-radius:24px;background:var(--paper);box-shadow:0 28px 90px rgba(0,0,0,.3);animation:rise .28s cubic-bezier(.2,.8,.2,1)}
+  .card{width:min(580px,100%);max-height:calc(100vh - 32px);overflow:auto;border-radius:24px;background:var(--paper);box-shadow:0 28px 90px rgba(0,0,0,.3);animation:rise .28s cubic-bezier(.2,.8,.2,1)}
   @keyframes rise{from{opacity:0;transform:translateY(20px) scale(.98)}}
   .card-hero{padding:20px 20px 16px;color:#fff;background:var(--green);border-radius:24px 24px 0 0}
   .card-hero .eyebrow{color:#efc77f}
-  .card-hero h2{margin:9px 0 4px;font-size:20px}
-  .card-hero p{margin:0;color:rgba(255,255,255,.72);font-size:12px}
+  .card-hero h2{margin:9px 0 4px;font-size:21px}
+  .card-hero p{margin:0;color:rgba(255,255,255,.72);font-size:13px}
   .card-body{padding:18px 20px 22px}
-  .result-story{margin-bottom:13px;padding:13px 15px;border-left:4px solid var(--red);background:#fff;line-height:1.75;font-size:14px}
+  .result-story{margin-bottom:13px;padding:13px 15px;border-left:4px solid var(--red);background:#fff;line-height:1.8;font-size:15px}
   .delta-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:13px}
-  .delta-chips i{padding:5px 8px;border-radius:8px;background:#e8e2d7;font-style:normal;font-size:12px;font-weight:800}
+  .delta-chips i{padding:5px 9px;border-radius:8px;background:#e8e2d7;font-style:normal;font-size:13px;font-weight:800}
   .delta-chips i.up{color:#17634d;background:#dcefe6}
   .delta-chips i.down{color:var(--red);background:#f4dcd7}
-  .insight{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:12px 14px;border-radius:12px;background:var(--goldsoft);color:#5e4822;font-size:13px;line-height:1.65}
+  .insight{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:12px 14px;border-radius:12px;background:var(--goldsoft);color:#5e4822;font-size:14px;line-height:1.7}
   .insight b{color:var(--reddark);white-space:nowrap}
   .result-actions{margin-top:18px;display:flex;justify-content:flex-end;gap:9px}
   .end-screen{min-height:100vh;padding:18px;display:grid;place-items:center;background:radial-gradient(circle at 50% 12%, rgba(196,147,62,.22), transparent 26rem), var(--green)}
-  .end-card{width:min(560px,100%);overflow:hidden;border-radius:26px;background:var(--paper);box-shadow:0 30px 90px rgba(0,0,0,.32)}
+  .end-card{width:min(580px,100%);overflow:hidden;border-radius:26px;background:var(--paper);box-shadow:0 30px 90px rgba(0,0,0,.32)}
   .end-hero{position:relative;padding:26px;color:#fff;background:var(--reddark);overflow:hidden}
   .end-hero::after{content:"班";position:absolute;right:-20px;bottom:-44px;font:150px/1 STKaiti,KaiTi,serif;color:rgba(255,255,255,.06)}
   .end-hero .eyebrow{color:#f1cf91}
   .end-hero h2{margin:14px 0 6px;font-size:24px}
-  .end-hero p{margin:0;color:rgba(255,255,255,.74);font-size:13px;line-height:1.7}
+  .end-hero p{margin:0;color:rgba(255,255,255,.74);font-size:14px;line-height:1.7}
   .end-body{padding:22px}
   .end-body h3{margin:0 0 10px;font-size:16px}
   .end-score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
   .end-score div{padding:12px;border-radius:12px;background:#ebe5da;text-align:center}
-  .end-score span{display:block;color:var(--ink2);font-size:11px}
-  .end-score b{font:700 20px Georgia,serif}
+  .end-score span{display:block;color:var(--ink2);font-size:12px}
+  .end-score b{font:700 21px Georgia,serif}
   .next-list{display:grid;gap:7px;margin-bottom:16px}
-  .next-list div{padding:10px 12px;border-radius:10px;background:var(--green3);color:var(--green);font-size:13px;font-weight:700;line-height:1.4}
+  .next-list div{padding:11px 13px;border-radius:10px;background:var(--green3);color:var(--green);font-size:14px;font-weight:700;line-height:1.5}
   .end-actions{display:flex;gap:9px}
   .end-actions .btn{flex:1}
-  .toast{position:fixed;left:50%;bottom:22px;z-index:150;padding:11px 15px;border-radius:11px;color:#fff;background:rgba(20,35,32,.95);box-shadow:0 10px 26px rgba(0,0,0,.2);transform:translateX(-50%);font-size:13px;animation:rise .25s ease;max-width:88%;text-align:center}
+  .toast{position:fixed;left:50%;bottom:22px;z-index:150;padding:12px 16px;border-radius:12px;color:#fff;background:rgba(20,35,32,.95);box-shadow:0 10px 26px rgba(0,0,0,.2);transform:translateX(-50%);font-size:14px;animation:rise .25s ease;max-width:88%;text-align:center}
   @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
 </style>
 </head>
@@ -186,11 +210,29 @@
     <main class="wrap opening">
       <div class="eyebrow">每次开局都不一样</div>
       <h1>把血汗，<br>换成能活命的<em>能力。</em></h1>
-      <p class="intro">10 点牛马值，随便换。有的能力改了你的起始底子，有的能解锁别人选不了的选项。花多花少，这局的路都不一样。</p>
+      <p class="intro">10 点牛马值，随便换。有的能力改了你的起始底子，有的能解锁别人选不了的选项。剩下的牛马值，待会儿还能用来"刷新"传奇人物。</p>
       <div class="ability-grid" id="shopGrid"></div>
       <div class="start-dock">
         <div class="dock-role"><small>已选能力</small><strong id="ownedSummary">还没选，两手空空就上路？</strong></div>
-        <button class="btn gold" id="confirmShopBtn" type="button">确认上路</button>
+        <button class="btn gold" id="confirmShopBtn" type="button">下一步 · 组建队伍</button>
+      </div>
+    </main>
+  </section>
+
+  <section id="teamScreen" class="hidden">
+    <header class="topbar"><div class="brand"><div class="seal">岚</div><div>组建干部队伍<small>招贤纳士 · 凑羁绊</small></div></div></header>
+    <div class="shop-bar"><span>剩余牛马值（第4次起每次刷新花 2 点）</span><b id="teamPoints">10</b></div>
+    <main class="wrap opening">
+      <div class="eyebrow">穿越时空的援军</div>
+      <h1>把历史里的狠人，<br>请进你的<em>科室。</em></h1>
+      <p class="intro">从三国到大明，30 位传奇人物等你刷新招募。最多签 3 人；凑出同组的两个人/三个人，还能激活<b>羁绊</b>，buff 拉满。</p>
+      <div class="team-slot" id="teamSlots"></div>
+      <div class="legend-grid" id="legendGrid"></div>
+      <div id="bondPreview"></div>
+      <div class="start-dock">
+        <div class="dock-role"><small>队伍阵容</small><strong id="teamSummary">还没招到人</strong></div>
+        <button class="btn ghost" id="refreshBtn" type="button" style="margin-right:8px">刷新</button>
+        <button class="btn gold" id="confirmTeamBtn" type="button">确认上路</button>
       </div>
     </main>
   </section>
@@ -202,9 +244,9 @@
         <div class="score-chip"><small>绩效</small><b id="scoreText">000</b></div>
       </div>
       <div class="status-strip">
-        <div class="status-chip"><span>预算</span><b id="budgetText">60</b></div>
-        <div class="status-chip"><span>电量</span><b id="energyText">70</b></div>
-        <div class="status-chip danger"><span>背锅值</span><b id="riskText">25</b></div>
+        <div class="status-chip budget"><span>💰 预算</span><b id="budgetText">60</b></div>
+        <div class="status-chip energy"><span>🔋 电量</span><b id="energyText">70</b></div>
+        <div class="status-chip risk"><span>⚠️ 背锅值</span><b id="riskText">25</b></div>
       </div>
       <div class="metrics-row">
         <div class="metric-chip"><span>👍口碑</span><b id="mRep">55</b></div>
@@ -227,6 +269,10 @@
         <section class="panel">
           <div class="panel-title"><b>你这个人</b><span>WHO YOU ARE</span></div>
           <div class="metric-list" id="metrics"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-title"><b>你的队伍</b><span>TEAM</span></div>
+          <div class="team-list" id="teamPanel"></div>
         </section>
         <section class="panel">
           <div class="panel-title"><b>你带的能力</b><span>ABILITIES</span></div>
@@ -256,13 +302,12 @@
         </div>
         <h3>完整版还会加这些</h3>
         <div class="next-list">
-          <div>🧑‍🤝‍🧑 自己组干部队伍，同事有性格、能凑羁绊</div>
           <div>🎲 AI 随机事件（走后端代理，key 不落前端）</div>
           <div>📈 阶段末能力卡 + 年终评级（SSS~寄，写成"年终总结"味）</div>
           <div>🗓 24 天，有起承转合、有回调、有硬仗</div>
         </div>
         <div class="end-actions">
-          <button class="btn solid" id="replayBtn" type="button">再开一局（换能力）</button>
+          <button class="btn solid" id="replayBtn" type="button">再开一局（换能力/换人）</button>
         </div>
       </div>
     </div>
@@ -318,6 +363,53 @@ var ABILITIES = [
   {id:"iron", icon:"🦾", name:"铁胃", cost:1, desc:"吃什么都不闹肚子，陪检试吃也不虚。", start:{energy:4}, unlock:{tag:"taste", label:"现场试吃"}},
   {id:"meditate", icon:"🧘", name:"带薪养气功", cost:2, desc:"午休冥想回血，每轮结束电量 +1。", regen:1},
   {id:"guanxi", icon:"📇", name:"副业人脉", cost:2, desc:"前同事、同学、网友都算你的人。", start:{net:5}}
+];
+
+/* 30 位传奇人物：三国 → 两晋 → 南北朝 → 隋 → 唐 → 宋 → 元 → 明 */
+var LEGENDARIES = [
+  {id:"liubei", name:"刘备", dy:"三国·蜀", icon:"🧢", title:"织席贩履", desc:"卖过草鞋，哭过江山，靠一个「仁」字攒下人心。", mod:{rep:1, net:1}},
+  {id:"guanyu", name:"关羽", dy:"三国·蜀", icon:"🗡️", title:"武圣", desc:"义薄云天，信用这块从没塌过。", mod:{rep:2}},
+  {id:"zhangfei", name:"张飞", dy:"三国·蜀", icon:"🔥", title:"万人敌", desc:"雷厉风行，一声吼能把违规的震退三步。", mod:{safe:2}},
+  {id:"zhugeliang", name:"诸葛亮", dy:"三国·蜀", icon:"🧮", title:"卧龙", desc:"运筹帷幄，一份材料能给你写出花来。", mod:{net:2, score:2}},
+  {id:"huatuo", name:"华佗", dy:"三国·汉末", icon:"💊", title:"神医", desc:"治未病的高手，食品安全和药品这块他门儿清。", mod:{safe:1, energy:1}},
+  {id:"wangxizhi", name:"王羲之", dy:"东晋", icon:"✍️", title:"书圣", desc:"下笔如神，你写材料他落款，绩效直接起飞。", mod:{score:3}},
+  {id:"wangxianzhi", name:"王献之", dy:"东晋", icon:"🖌️", title:"二王", desc:"书承父业，父子同台，文书天下无敌。", mod:{score:1, net:1}},
+  {id:"xiean", name:"谢安", dy:"东晋", icon:"🧘", title:"东山再起", desc:"淝水之战都稳如老狗，再大的舆情他眼皮都不抬。", mod:{safe:2, net:2}},
+  {id:"jikang", name:"嵇康", dy:"魏晋", icon:"🎋", title:"竹林七贤", desc:"打铁打得叮当响，风骨硬，眼里揉不得沙子。", mod:{rep:2, biz:-1}},
+  {id:"ruanji", name:"阮籍", dy:"魏晋", icon:"🍶", title:"青白眼", desc:"看人一眼一个准，谁是人才谁是坑，门儿清。", mod:{net:2}},
+  {id:"zuchongzhi", name:"祖冲之", dy:"南北朝", icon:"🔢", title:"算圣", desc:"圆周率算到小数点后七位，台账数据从不出错。", mod:{score:2, budget:-1}},
+  {id:"lidaoyuan", name:"郦道元", dy:"北魏", icon:"🌊", title:"水经注", desc:"走遍山川写水文，现场踏勘这块没输过。", mod:{safe:1, net:1}},
+  {id:"mulan", name:"花木兰", dy:"北魏", icon:"🏇", title:"巾帼英雄", desc:"替父出征不皱眉头，担责任这事儿她从没躲过。", mod:{safe:2, energy:1}},
+  {id:"lichun", name:"李春", dy:"隋", icon:"🌉", title:"赵州桥", desc:"一千四百年不倒的桥是他修的，质量监管的祖师爷。", mod:{biz:2, safe:1}},
+  {id:"weizheng", name:"魏征", dy:"唐", icon:"🗣️", title:"谏臣", desc:"敢跟领导拍桌子说真话，监督的胆量拉满。", mod:{safe:2, biz:-1}},
+  {id:"direnjie", name:"狄仁杰", dy:"唐", icon:"🔍", title:"神探", desc:"断案如神，线索再碎也能给你拼出真相。", mod:{safe:2, rep:1}},
+  {id:"libai", name:"李白", dy:"唐", icon:"🍻", title:"诗仙", desc:"斗酒诗百篇，一篇推文顶你写十篇通稿。", mod:{rep:3, budget:-1}},
+  {id:"dufu", name:"杜甫", dy:"唐", icon:"🏠", title:"诗圣", desc:"忧国忧民，民生疾苦他比谁都上心。", mod:{rep:2, safe:1}},
+  {id:"xuanzang", name:"玄奘", dy:"唐", icon:"🧭", title:"取经人", desc:"一个人走完十万八千里，出海考察他熟。", mod:{biz:2, net:1}},
+  {id:"baozheng", name:"包拯", dy:"宋", icon:"⚖️", title:"包青天", desc:"铁面无私，三把铡刀专治各种不服。", mod:{safe:3, rep:1}},
+  {id:"sushi", name:"苏轼", dy:"宋", icon:"🍜", title:"东坡", desc:"大文豪+大厨，食品这块他是行家，还能写段子。", mod:{rep:2, energy:1}},
+  {id:"shenkuo", name:"沈括", dy:"宋", icon:"🔬", title:"梦溪笔谈", desc:"上知天文下知地理，检测设备他比说明书还熟。", mod:{score:2, safe:1}},
+  {id:"yuefei", name:"岳飞", dy:"宋", icon:"🏹", title:"精忠报国", desc:"执行力天花板，就是太拼，容易把自己累着。", mod:{safe:3, energy:-1}},
+  {id:"liqingzhao", name:"李清照", dy:"宋", icon:"🌸", title:"易安居士", desc:"婉约词宗，一份文书写得又准又动人。", mod:{rep:2, score:1}},
+  {id:"guoshoujing", name:"郭守敬", dy:"元", icon:"🌌", title:"授时历", desc:"天文历法算到秒，数据测算这块无人能及。", mod:{score:3}},
+  {id:"zhenghe", name:"郑和", dy:"明", icon:"⚓", title:"三宝太监", desc:"七下西洋，海外营商和出海服务他是鼻祖。", mod:{biz:3}},
+  {id:"yuqian", name:"于谦", dy:"明", icon:"🛡️", title:"救时宰相", desc:"北京保卫战力挽狂澜，再大的风浪他扛得住。", mod:{safe:2, net:2}},
+  {id:"wangyangming", name:"王阳明", dy:"明", icon:"💡", title:"心学宗师", desc:"知行合一，格局打开，协调各方是一把好手。", mod:{net:2, rep:1}},
+  {id:"qijiguang", name:"戚继光", dy:"明", icon:"🐅", title:"戚家军", desc:"练兵有方，队伍带得铁板一块，就是费点心思。", mod:{safe:2, energy:-1}},
+  {id:"lishizhen", name:"李时珍", dy:"明", icon:"🌿", title:"本草纲目", desc:"尝遍百草，药食同源，安全监管他是祖师爷。", mod:{safe:2, rep:1}}
+];
+
+/* 羁绊：凑齐成员即可激活 */
+var BONDS = [
+  {id:"ty", name:"桃园结义", members:["liubei","guanyu","zhangfei"], desc:"义气就是生产力。", mod:{rep:3, safe:3}},
+  {id:"yushui", name:"鱼水君臣", members:["liubei","zhugeliang"], desc:"三顾茅庐换来的君臣，统筹拉满。", mod:{score:4, net:2}},
+  {id:"erwang", name:"二王父子", members:["wangxizhi","wangxianzhi"], desc:"父子同台，文书无敌。", mod:{score:4}},
+  {id:"zhulin", name:"竹林风骨", members:["jikang","ruanji"], desc:"风骨硬，腰杆直，口碑自然好。", mod:{rep:2, net:2}},
+  {id:"lidu", name:"李杜并称", members:["libai","dufu"], desc:"诗仙+诗圣，一篇推文引爆全网。", mod:{rep:5}},
+  {id:"tanmian", name:"铁面神探", members:["baozheng","direnjie"], desc:"一个铡刀一个断案，执法滴水不漏。", mod:{safe:4}},
+  {id:"yishi", name:"医食同源", members:["huatuo","lishizhen"], desc:"神医+本草，安全与健康双保险。", mod:{safe:3, energy:2}},
+  {id:"suanxue", name:"算学双璧", members:["zuchongzhi","guoshoujing"], desc:"算圣+授时，数据台账零差错。", mod:{score:4, budget:-2}},
+  {id:"daming", name:"大明柱石", members:["yuqian","wangyangming"], desc:"一个扛事一个定心，大局稳如磐石。", mod:{net:3, safe:2}}
 ];
 
 var EVENTS = [
@@ -408,13 +500,21 @@ var EVENTS = [
 ];
 
 var POINTS = 10;
+var FREE_REFRESH = 3;
 var selectedPersona = null;
 var ownedAbilities = [];
+var team = [];
+var drawnLegends = [];
+var refreshCount = 0;
 var state = null;
 
 function personaById(id){ for(var i=0;i<PERSONAS.length;i++){ if(PERSONAS[i].id===id) return PERSONAS[i]; } return PERSONAS[0]; }
 function abilityById(id){ for(var i=0;i<ABILITIES.length;i++){ if(ABILITIES[i].id===id) return ABILITIES[i]; } return null; }
+function legendById(id){ for(var i=0;i<LEGENDARIES.length;i++){ if(LEGENDARIES[i].id===id) return LEGENDARIES[i]; } return null; }
 function hasAbility(id){ return ownedAbilities.indexOf(id) !== -1; }
+function abilityCost(){ return ownedAbilities.reduce(function(s,id){ return s + abilityById(id).cost; }, 0); }
+function refreshCostTotal(){ return Math.max(0, refreshCount - FREE_REFRESH) * 2; }
+function remainingPoints(){ return POINTS - abilityCost() - refreshCostTotal(); }
 
 function renderPersonas(){
   el("personaGrid").innerHTML = "";
@@ -428,8 +528,6 @@ function renderPersonas(){
   });
 }
 
-function remainingPoints(){ return POINTS - ownedAbilities.reduce(function(s,id){ return s + abilityById(id).cost; }, 0); }
-
 function renderShop(){
   el("shopPoints").textContent = remainingPoints();
   var rem = remainingPoints();
@@ -437,7 +535,7 @@ function renderShop(){
     var owned = hasAbility(a.id);
     var afford = rem >= a.cost;
     var unlockTxt = a.unlock ? ('<span class="unlock">🔓 解锁「'+a.unlock.label+'」类选项</span>') : '';
-    var costHtml = owned ? '<b>已换</b><span class="got">✓ 已拥有</span>' : ('<b>'+a.cost+'</b><span>牛马值</span>');
+    var costHtml = owned ? '<span class="got">✓ 已拥有</span>' : ('<b>'+a.cost+'</b><span>牛马值</span>');
     return '<button type="button" class="ability-card'+(owned?' owned':'')+'" data-id="'+a.id+'"'+( (!owned && !afford) ? ' disabled' : '')+'>'+
       '<span class="ability-icon">'+a.icon+'</span>'+
       '<span class="info"><b>'+a.name+'</b>'+unlockTxt+'<p>'+a.desc+'</p></span>'+
@@ -460,19 +558,81 @@ function toggleAbility(id){
   renderShop();
 }
 
+/* 队伍系统 */
+function activeBonds(){
+  return BONDS.filter(function(b){
+    return b.members.every(function(m){ return team.indexOf(m) !== -1; });
+  });
+}
+function refreshLegends(){
+  var pool = LEGENDARIES.filter(function(l){ return team.indexOf(l.id) === -1 && drawnLegends.indexOf(l.id) === -1; });
+  var picks = shuffle(pool).slice(0, 3);
+  drawnLegends = picks.map(function(l){ return l.id; });
+  renderTeam();
+}
+function recruitLegend(id){
+  if(team.length >= 3){ toast("最多签 3 人"); return; }
+  team.push(id);
+  drawnLegends = [];
+  renderTeam();
+  toast("已招入 " + legendById(id).name);
+}
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+
+function renderTeam(){
+  el("teamPoints").textContent = remainingPoints();
+  // 槽位
+  el("teamSlots").innerHTML = [0,1,2].map(function(i){
+    if(team[i]){ var l=legendById(team[i]); return '<div class="slot filled">'+l.icon+' '+l.name+'</div>'; }
+    return '<div class="slot">空位 '+(i+1)+'</div>';
+  }).join("");
+  // 候选
+  el("legendGrid").innerHTML = drawnLegends.length ? drawnLegends.map(function(id){
+    var l = legendById(id);
+    var eff = effectText(l.mod);
+    return '<article class="legend-card"><span class="avatar">'+l.icon+'</span><div><h3>'+l.name+'<span class="dy">'+l.dy+'</span><span class="title">'+l.title+'</span></h3>'+
+      '<p>'+l.desc+'</p><span class="eff">'+eff+'</span>'+
+      '<button class="btn gold small" data-recruit="'+l.id+'"'+(team.length>=3?' disabled':'')+'>招募</button></div></article>';
+  }).join("") : '<div class="empty">点「刷新」抽三位传奇人物。</div>';
+  el("legendGrid").querySelectorAll("[data-recruit]").forEach(function(b){
+    b.addEventListener("click", function(){ recruitLegend(b.getAttribute("data-recruit")); });
+  });
+  // 刷新按钮
+  var nextCost = refreshCount < FREE_REFRESH ? 0 : 2;
+  el("refreshBtn").disabled = remainingPoints() < nextCost || team.length >= 3;
+  el("refreshBtn").textContent = nextCost === 0 ? ("刷新 · 免费（"+(FREE_REFRESH-refreshCount)+"次）") : "刷新 · 2牛马值";
+  // 羁绊预览
+  var bonds = activeBonds();
+  var all = BONDS.map(function(b){
+    var active = bonds.indexOf(b) !== -1;
+    var have = b.members.filter(function(m){ return team.indexOf(m) !== -1; });
+    return '<div class="bond-row'+(active?'':' off')+'">'+(active?'✨ 已激活':'🔒')+' '+b.name+'（'+have.length+'/'+b.members.length+'）：'+b.desc+'</div>';
+  });
+  el("bondPreview").innerHTML = '<div class="sec-head"><h2 style="font-size:16px">羁绊图鉴</h2></div>' + all.join("");
+  var names = team.map(function(id){ return legendById(id).name; });
+  el("teamSummary").textContent = names.length ? names.join(" · ") : "还没招到人";
+}
+
+function effectText(mod){
+  var labels = {rep:"口碑",safe:"安全",biz:"营商",net:"人脉",budget:"预算",energy:"电量",score:"绩效"};
+  var parts = [];
+  for(var k in mod){ if(mod[k]){ parts.push(labels[k]+" "+signed(mod[k])); } }
+  return parts.join("，") || "无";
+}
+
+/* 开局 */
 function startGame(){
   var p = personaById(selectedPersona);
   state = {
-    persona: selectedPersona, abilities: ownedAbilities.slice(), round: 0,
+    persona: selectedPersona, abilities: ownedAbilities.slice(), team: team.slice(), round: 0,
     rep:55, safe:58, biz:52, net:50, budget:60, energy:70, risk:25, score:0,
     history: []
   };
-  // 应用能力带来的起始底子
   state.abilities.forEach(function(id){
     var a = abilityById(id);
     if(a.start){ for(var k in a.start){ state[k] = clamp(state[k] + a.start[k], 0, 100); } }
   });
-  el("shopScreen").classList.add("hidden");
+  el("teamScreen").classList.add("hidden");
   el("gameScreen").classList.remove("hidden");
   el("personaLabel").textContent = "沈星 · " + p.name;
   renderEvent();
@@ -510,120 +670,3 @@ function renderEvent(){
 function currentMods(){
   var m = {rep:0,safe:0,biz:0,net:0,budget:0,energy:0,risk:0,score:0};
   var p = personaById(state.persona);
-  for(var k in p.mod){ m[k] += p.mod[k]; }
-  state.abilities.forEach(function(id){
-    var a = abilityById(id);
-    if(a.mod){ for(var k2 in a.mod){ m[k2] += a.mod[k2]; } }
-  });
-  return m;
-}
-
-function renderDashboard(){
-  el("budgetText").textContent = state.budget;
-  el("energyText").textContent = state.energy;
-  el("riskText").textContent = state.risk;
-  el("mRep").textContent = state.rep;
-  el("mSafe").textContent = state.safe;
-  el("mBiz").textContent = state.biz;
-  el("mNet").textContent = state.net;
-  el("scoreText").textContent = String(state.score).padStart(3,"0");
-  el("metrics").innerHTML = METRICS.map(function(m){
-    var v = state[m.key];
-    var cls = v<30 ? "danger" : v<50 ? "warn" : "";
-    return '<div class="m-row"><span class="ic">'+m.icon+'</span><span class="nm">'+m.label+'</span><div class="bar"><i class="'+cls+'" style="width:'+v+'%"></i></div><b>'+v+'</b></div>';
-  }).join("");
-  el("abilityChips").innerHTML = state.abilities.length ? state.abilities.map(function(id){ var a=abilityById(id); return '<span class="perk-chip">'+a.icon+' '+a.name+'</span>'; }).join("") : '<span class="empty">这局没换能力，纯靠命硬。</span>';
-  if(!state.history.length){
-    el("historyLog").innerHTML = '<div class="empty">还没干啥，先吃个早饭。</div>';
-  } else {
-    el("historyLog").innerHTML = state.history.slice().reverse().map(function(h){
-      return '<div class="log-item"><strong>'+h.title+'</strong><br>'+h.choice+' · '+h.verdict+'</div>';
-    }).join("");
-  }
-}
-
-function applyChoice(c){
-  var ev = currentEvent();
-  var e = clone(c.e);
-  // 人设 + 能力 的持续修正
-  var mods = currentMods();
-  for(var k in mods){ e[k] = (e[k]||0) + mods[k]; }
-  // 车技：外勤类选择省钱
-  if(c.field && hasAbility("drive")){ e.budget = (e.budget||0) + 1; }
-  // 应用
-  ["rep","safe","biz","net"].forEach(function(k){ state[k] = clamp(state[k] + (e[k]||0), 0, 100); });
-  state.budget = clamp(state.budget + (e.budget||0), 0, 100);
-  state.energy = clamp(state.energy + (e.energy||0), 0, 100);
-  state.risk = clamp(state.risk + (e.risk||0), 0, 100);
-  state.score += (e.score||0);
-  var net = (e.rep||0)+(e.safe||0)+(e.biz||0)+(e.net||0);
-  var verdict = net >= 6 ? "稳了" : net <= -6 ? "翻车" : "凑合";
-  state.history.push({ title: ev.title, choice: c.t, verdict: verdict });
-  showResult(c, e);
-  renderDashboard();
-  el("scoreText").textContent = String(state.score).padStart(3,"0");
-}
-
-function showResult(c, e){
-  el("resultOutcomeLabel").textContent = currentEvent().day + " · 处理完毕";
-  el("resultTitle").textContent = c.t;
-  el("resultScoreLine").textContent = "绩效 " + signed(e.score||0);
-  el("resultStory").textContent = c.r;
-  el("resultInsight").textContent = c.i;
-  var labels = {rep:"口碑",safe:"安全",biz:"营商",net:"人脉",budget:"预算",energy:"电量",risk:"背锅值",score:"绩效"};
-  var chips = [];
-  for(var k in e){
-    if(e[k] === 0) continue;
-    var cls = k==="risk" ? (e[k]>0?"down":"up") : (e[k]>0?"up":"down");
-    chips.push('<i class="'+cls+'">'+labels[k]+' '+signed(e[k])+'</i>');
-  }
-  el("deltaChips").innerHTML = chips.join("");
-  el("nextBtn").textContent = state.round >= 2 ? "下班打卡" : "下一件事";
-  el("resultOverlay").classList.remove("hidden");
-}
-
-function next(){
-  el("resultOverlay").classList.add("hidden");
-  // 带薪养气功：每轮结束回电
-  if(hasAbility("meditate")){ state.energy = clamp(state.energy + 1, 0, 100); }
-  if(state.round >= 2){ endSlice(); return; }
-  state.round += 1;
-  renderEvent();
-  renderDashboard();
-  window.scrollTo(0,0);
-}
-
-function endSlice(){
-  el("gameScreen").classList.add("hidden");
-  el("endScreen").classList.remove("hidden");
-  el("endScore").textContent = String(state.score).padStart(3,"0");
-  el("endRep").textContent = state.rep;
-  el("endRisk").textContent = state.risk;
-  window.scrollTo(0,0);
-}
-
-function reset(){
-  el("endScreen").classList.add("hidden");
-  el("opening").classList.remove("hidden");
-  selectedPersona = null;
-  ownedAbilities = [];
-  el("startBtn").disabled = true;
-  el("selectedPersonaText").textContent = "先选一个人设";
-  renderPersonas();
-  window.scrollTo(0,0);
-}
-
-el("startBtn").addEventListener("click", function(){
-  el("opening").classList.add("hidden");
-  el("shopScreen").classList.remove("hidden");
-  renderShop();
-  window.scrollTo(0,0);
-});
-el("confirmShopBtn").addEventListener("click", startGame);
-el("nextBtn").addEventListener("click", next);
-el("replayBtn").addEventListener("click", reset);
-
-renderPersonas();
-</script>
-</body>
-</html>
