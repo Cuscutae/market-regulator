@@ -5,16 +5,16 @@
 ## 目录结构
 
 - `index.html` —— 游戏本体（单文件，浏览器直接打开即可玩）
-- `api/ai.js` —— Vercel 无服务器函数，AI 随机事件代理
+- `cloud-functions/ai/` —— EdgeOne Pages 云函数，AI 随机事件代理
 - `.env.example` —— 环境变量示例
 
 ## 本地运行
 
 直接用浏览器打开 `index.html`。AI 随机事件依赖后端，本地未配置时会自动回退到离线事件。
 
-## 部署
+## 部署（腾讯云 EdgeOne Pages）
 
-**Vercel**：导入本仓库即可，零配置（`index.html` 作为静态站点，`api/` 作为无服务器函数）。
+导入本仓库到 EdgeOne Pages，零配置：`index.html` 作为静态站点，`cloud-functions/` 作为云函数。默认域名免备案，国内直连。
 
 ## 环境变量
 
