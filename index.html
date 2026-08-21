@@ -166,6 +166,7 @@
   .delta-chips i.down{color:var(--red);background:#f4dcd7}
   .insight{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:12px 14px;border-radius:12px;background:var(--goldsoft);color:#5e4822;font-size:14px;line-height:1.7}
   .insight b{color:var(--reddark);white-space:nowrap}
+  .ai-status{min-height:18px;color:var(--red);font-size:14px;font-weight:700;margin-top:12px;line-height:1.6}
   .result-actions{margin-top:18px;display:flex;justify-content:flex-end;gap:9px}
   .end-screen{min-height:100vh;padding:18px;display:grid;place-items:center;background:radial-gradient(circle at 50% 12%, rgba(196,147,62,.22), transparent 26rem), var(--green)}
   .end-card{width:min(580px,100%);overflow:hidden;border-radius:26px;background:var(--paper);box-shadow:0 30px 90px rgba(0,0,0,.32)}
@@ -210,7 +211,7 @@
     <main class="wrap opening">
       <div class="eyebrow">每次开局都不一样</div>
       <h1>把血汗，<br>换成能活命的<em>能力。</em></h1>
-      <p class="intro">10 点牛马值，随便换。有的能力改了你的起始底子，有的能解锁别人选不了的选项。剩下的牛马值，待会儿还能用来"刷新"传奇人物。</p>
+      <p class="intro">10 点牛马值，随便换。有的能力改了你的起始底子，有的能解锁别人选不了的选项。剩下的牛马值，待会儿还能用来「刷新」传奇人物。</p>
       <div class="ability-grid" id="shopGrid"></div>
       <div class="start-dock">
         <div class="dock-role"><small>已选能力</small><strong id="ownedSummary">还没选，两手空空就上路？</strong></div>
@@ -291,10 +292,10 @@
       <div class="end-hero">
         <div class="eyebrow">切片到此为止</div>
         <h2>下班，打卡。</h2>
-        <p>这只是开头三天。你大概闻出味道了——完整版会从这里接上 24 天。</p>
+        <p>这只是开头四天。你大概闻出味道了——完整版会从这里接上 24 天。</p>
       </div>
       <div class="end-body">
-        <h3>这三天你攒下的绩效</h3>
+        <h3>这几天你攒下的绩效</h3>
         <div class="end-score">
           <div><span>绩效</span><b id="endScore">000</b></div>
           <div><span>口碑</span><b id="endRep">55</b></div>
@@ -302,8 +303,7 @@
         </div>
         <h3>完整版还会加这些</h3>
         <div class="next-list">
-          <div>🎲 AI 随机事件（走后端代理，key 不落前端）</div>
-          <div>📈 阶段末能力卡 + 年终评级（SSS~寄，写成"年终总结"味）</div>
+          <div>📈 阶段末能力卡 + 年终评级（SSS~寄，写成「年终总结」味）</div>
           <div>🗓 24 天，有起承转合、有回调、有硬仗</div>
         </div>
         <div class="end-actions">
@@ -325,6 +325,24 @@
         <div class="delta-chips" id="deltaChips"></div>
         <div class="insight"><b>复盘</b><span id="resultInsight"></span></div>
         <div class="result-actions"><button class="btn solid" id="nextBtn" type="button">下一件事</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="aiOverlay">
+    <div class="card">
+      <div class="card-hero">
+        <div class="eyebrow">AI 随机节点</div>
+        <h2>生成未知事件</h2>
+        <p>第 4 件事 · deepseek 按当前局势生成</p>
+      </div>
+      <div class="card-body">
+        <div class="result-story">AI 会按你当前的人设、队伍和局势，生成一个贴合语气的随机事件。失败会自动切换离线事件，不影响继续玩。</div>
+        <div class="ai-status" id="aiStatus"></div>
+        <div class="result-actions">
+          <button class="btn ghost" id="aiOfflineBtn" type="button">使用离线事件</button>
+          <button class="btn solid" id="aiGenerateBtn" type="button">生成动态事件</button>
+        </div>
       </div>
     </div>
   </div>
@@ -499,6 +517,84 @@ var EVENTS = [
   }
 ];
 
+var OFFLINE_EVENTS = [
+  {
+    day:"第 1 天 · 随机", tag:"随机",
+    title:"一封匿名邮件：有人改了检测报告",
+    os:"深夜你收到一封匿名邮件，附着一张疑似被 PS 的抽检报告截图。原始样品后天就过留样期。举报人不肯露面。",
+    clues:["截图缺完整编号","留样只剩两天","涉事机构手里有多个项目"],
+    choices:[
+      {t:"封存链条，独立复核", os:"先把证据锁死……", hint:"最稳，但要协调一堆人", e:{rep:7,safe:8,biz:-2,net:3,budget:-8,energy:-8,risk:-5,score:18},
+       r:"你封了留样、系统日志和签批记录，另组人独立复核。日志显示报告曾被异常退回修改，关键证据在留样到期前固定住了。",
+       i:"面对内部质量线索，证据保全、独立复核、人员回避必须同步，别让「内部沟通」变成「证据灭失」。"},
+      {t:"先找检测机构负责人核实", os:"先聊聊……", hint:"快，但可能惊动对方", e:{rep:-2,safe:0,biz:1,net:2,budget:-1,energy:-3,risk:2,score:4},
+       r:"你找到负责人，他矢口否认。可等你回头查系统，相关日志已经被覆盖了。",
+       i:"可能涉及内部责任时，先行沟通容易打草惊蛇，先固定易灭失证据再谈。"},
+      {t:"信息不完整，先放放", os:"没头没尾的……", hint:"省力，但留样期不等人", e:{rep:-8,safe:-7,biz:3,net:-3,budget:0,energy:1,risk:6,score:0},
+       r:"你想着「举报人信息不全」先搁着。结果留样到期后，截图被人发到网上，监管部门被质疑「装死」。",
+       i:"匿名不等于没核查价值，根据风险先固定证据，别等「补全信息」再动手。"}
+    ]
+  },
+  {
+    day:"第 1 天 · 随机", tag:"随机",
+    title:"短视频在传「人造鸡蛋」",
+    os:"一段异常蛋黄的视频火了，说本地市场有人造鸡蛋。你抽检过没发现异常，但视频还在疯转，卖鸡蛋的大妈都在问。",
+    clues:["视频样品来源不明","鸡蛋销量开始掉","网友催你给结论"],
+    choices:[
+      {t:"边核查边发布可验证信息", os:"先说实话……", hint:"公开进度，把火降下来", e:{rep:9,safe:4,biz:3,net:4,budget:-5,energy:-7,risk:-3,score:16},
+       r:"你把抽检范围、检测进度、识别常识一条条发出去，又邀请第三方一起说明。谣言热度慢慢回落，鸡蛋摊的生意也回来了。",
+       i:"风险沟通的关键是给可验证的事实和进度，而不是憋到最后给个结论。"},
+      {t:"等全部检测完再回应", os:"等结论稳一点……", hint:"稳妥，但舆情不等人", e:{rep:-5,safe:2,biz:-4,net:-1,budget:-2,energy:-3,risk:3,score:4},
+       r:"你等了两天，结果这两天里谣言已经传成了段子，市场销量掉了不少，最后你还得连夜补说明。",
+       i:"完整结论需要时间，但已知事实、处置进度、判断边界可以随时公开。"},
+      {t:"直接认定造谣，要求删帖", os:"堵住再说……", hint:"快，但容易被反咬", e:{rep:-4,safe:1,biz:1,net:-4,budget:-1,energy:-2,risk:5,score:2},
+       r:"你让人删了视频，结果删帖截图被二次传播，「监管捂嘴」的说法反而更响。",
+       i:"没有充分证据就让人删帖，等于给谣言递刀。要说就说事实、进度、下一步。"}
+    ]
+  },
+  {
+    day:"第 1 天 · 随机", tag:"随机",
+    title:"算法揪出十几家「深夜幽灵店」",
+    os:"系统提示十几家外卖店只在深夜营业，地址还高度重合，证照图片像复制的。平台说算法误报率高，不想批量下架。",
+    clues:["订单量在涨","注册地址是老旧楼宇","线下核查可能打草惊蛇"],
+    choices:[
+      {t:"数据固证后分组同步核查", os:"一次端掉……", hint:"最彻底，但动作要大", e:{rep:7,safe:8,biz:-2,net:6,budget:-8,energy:-10,risk:-4,score:19},
+       r:"你先锁订单、地址、账户关联，平台同步限流，几个小组同一时段上门——多个无证厨房被一锅端，平台也补上了重复证照识别规则。",
+       i:"网络餐饮风险要线上数据与线下现场相互印证，行动节奏也属于证据策略。"},
+      {t:"逐家上门检查", os:"按名单来……", hint:"程序熟，但容易打草惊蛇", e:{rep:1,safe:2,biz:0,net:-2,budget:-5,energy:-9,risk:3,score:5},
+       r:"你按属地名单一家家跑，第一家刚查完，其余账号就齐刷刷下线、转移了地址。",
+       i:"链条化经营需要同步控制，常规顺序检查容易丧失窗口。"},
+      {t:"让平台自行复核证照", os:"省点力……", hint:"省力，但平台只查图片清晰度", e:{rep:-3,safe:-5,biz:3,net:1,budget:-1,energy:-2,risk:4,score:2},
+       r:"平台只比对了图片清不清晰，压根没发现线下几家店是同一个地址、共用一套证照。",
+       i:"平台审核是重要一环，但不能替代对可疑经营场所的现场核验。"}
+    ]
+  },
+  {
+    day:"第 1 天 · 随机", tag:"随机",
+    title:"两名骨干同时请了假",
+    os:"抽检、保障、投诉全赶一块，结果两个骨干一个家人生病、一个自己发烧。你盯着排班表，感觉发际线又后移了几毫米。",
+    clues:["高风险任务不能取消","一般任务占六成","可以向别的科借人"],
+    choices:[
+      {t:"重排风险任务，借调支援", os:"抓大放小……", hint:"保住重点，但要协调", e:{rep:2,safe:6,biz:0,net:6,budget:-4,energy:-8,risk:-1,score:13},
+       r:"你暂停了低风险例行，统一了模板和带教，重点任务按期完成，借来的两个人也摸清了流程。",
+       i:"资源紧张时按风险排序、降低临时协作成本，比硬扛更划算。"},
+      {t:"让现有的人全顶上去", os:"拼了……", hint:"保数量，但会累垮人", e:{rep:-2,safe:3,biz:2,net:-3,budget:0,energy:-12,risk:3,score:5},
+       r:"任务量是完成了，可一份现场记录因为疲劳写错了关键数据，返工反而更累。",
+       i:"以持续透支换短期数量，会把队伍风险转成执法质量风险。"},
+      {t:"全面推迟这个月检查", os:"先缓缓……", hint:"省力，但高风险漏不得", e:{rep:-3,safe:-7,biz:3,net:1,budget:2,energy:6,risk:2,score:2},
+       r:"队伍缓过来了，可一个高风险投诉没及时核查，最后被追着问。",
+       i:"延期也要分级，关键风险不能跟一般事项一起往后拖。"}
+    ]
+  }
+];
+
+function buildDeck(){
+  var deck = [];
+  EVENTS.forEach(function(e){ deck.push(clone(e)); });
+  deck.push({ aiPending:true, title:"未知事件", os:"", clues:[], choices:[] });
+  return deck;
+}
+
 var POINTS = 10;
 var FREE_REFRESH = 3;
 var selectedPersona = null;
@@ -511,162 +607,3 @@ var state = null;
 function personaById(id){ for(var i=0;i<PERSONAS.length;i++){ if(PERSONAS[i].id===id) return PERSONAS[i]; } return PERSONAS[0]; }
 function abilityById(id){ for(var i=0;i<ABILITIES.length;i++){ if(ABILITIES[i].id===id) return ABILITIES[i]; } return null; }
 function legendById(id){ for(var i=0;i<LEGENDARIES.length;i++){ if(LEGENDARIES[i].id===id) return LEGENDARIES[i]; } return null; }
-function hasAbility(id){ return ownedAbilities.indexOf(id) !== -1; }
-function abilityCost(){ return ownedAbilities.reduce(function(s,id){ return s + abilityById(id).cost; }, 0); }
-function refreshCostTotal(){ return Math.max(0, refreshCount - FREE_REFRESH) * 2; }
-function remainingPoints(){ return POINTS - abilityCost() - refreshCostTotal(); }
-
-function renderPersonas(){
-  el("personaGrid").innerHTML = "";
-  PERSONAS.forEach(function(p){
-    var c = document.createElement("button");
-    c.type = "button";
-    c.className = "persona-card" + (selectedPersona===p.id ? " selected":"");
-    c.innerHTML = "<i>"+p.icon+"</i><b>"+p.name+"</b><span class='tag'>"+p.tag+"</span><p>"+p.desc+"</p>";
-    c.addEventListener("click", function(){ selectedPersona=p.id; el("selectedPersonaText").textContent=p.icon+" "+p.name+" · "+p.tag; el("startBtn").disabled=false; renderPersonas(); });
-    el("personaGrid").appendChild(c);
-  });
-}
-
-function renderShop(){
-  el("shopPoints").textContent = remainingPoints();
-  var rem = remainingPoints();
-  el("shopGrid").innerHTML = ABILITIES.map(function(a){
-    var owned = hasAbility(a.id);
-    var afford = rem >= a.cost;
-    var unlockTxt = a.unlock ? ('<span class="unlock">🔓 解锁「'+a.unlock.label+'」类选项</span>') : '';
-    var costHtml = owned ? '<span class="got">✓ 已拥有</span>' : ('<b>'+a.cost+'</b><span>牛马值</span>');
-    return '<button type="button" class="ability-card'+(owned?' owned':'')+'" data-id="'+a.id+'"'+( (!owned && !afford) ? ' disabled' : '')+'>'+
-      '<span class="ability-icon">'+a.icon+'</span>'+
-      '<span class="info"><b>'+a.name+'</b>'+unlockTxt+'<p>'+a.desc+'</p></span>'+
-      '<span class="ability-cost">'+costHtml+'</span></button>';
-  }).join("");
-  el("shopGrid").querySelectorAll("[data-id]").forEach(function(b){
-    b.addEventListener("click", function(){ toggleAbility(b.getAttribute("data-id")); });
-  });
-  var owned = ownedAbilities.map(function(id){ return abilityById(id).icon+abilityById(id).name; });
-  el("ownedSummary").textContent = owned.length ? owned.join(" · ") : "还没选，两手空空就上路？";
-}
-
-function toggleAbility(id){
-  if(hasAbility(id)){ ownedAbilities.splice(ownedAbilities.indexOf(id),1); }
-  else{
-    var a = abilityById(id);
-    if(remainingPoints() < a.cost){ toast("牛马值不够了"); return; }
-    ownedAbilities.push(id);
-  }
-  renderShop();
-}
-
-/* 队伍系统 */
-function activeBonds(){
-  return BONDS.filter(function(b){
-    return b.members.every(function(m){ return team.indexOf(m) !== -1; });
-  });
-}
-function refreshLegends(){
-  var pool = LEGENDARIES.filter(function(l){ return team.indexOf(l.id) === -1 && drawnLegends.indexOf(l.id) === -1; });
-  var picks = shuffle(pool).slice(0, 3);
-  drawnLegends = picks.map(function(l){ return l.id; });
-  renderTeam();
-}
-function recruitLegend(id){
-  if(team.length >= 3){ toast("最多签 3 人"); return; }
-  team.push(id);
-  drawnLegends = [];
-  renderTeam();
-  toast("已招入 " + legendById(id).name);
-}
-function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
-
-function renderTeam(){
-  el("teamPoints").textContent = remainingPoints();
-  // 槽位
-  el("teamSlots").innerHTML = [0,1,2].map(function(i){
-    if(team[i]){ var l=legendById(team[i]); return '<div class="slot filled">'+l.icon+' '+l.name+'</div>'; }
-    return '<div class="slot">空位 '+(i+1)+'</div>';
-  }).join("");
-  // 候选
-  el("legendGrid").innerHTML = drawnLegends.length ? drawnLegends.map(function(id){
-    var l = legendById(id);
-    var eff = effectText(l.mod);
-    return '<article class="legend-card"><span class="avatar">'+l.icon+'</span><div><h3>'+l.name+'<span class="dy">'+l.dy+'</span><span class="title">'+l.title+'</span></h3>'+
-      '<p>'+l.desc+'</p><span class="eff">'+eff+'</span>'+
-      '<button class="btn gold small" data-recruit="'+l.id+'"'+(team.length>=3?' disabled':'')+'>招募</button></div></article>';
-  }).join("") : '<div class="empty">点「刷新」抽三位传奇人物。</div>';
-  el("legendGrid").querySelectorAll("[data-recruit]").forEach(function(b){
-    b.addEventListener("click", function(){ recruitLegend(b.getAttribute("data-recruit")); });
-  });
-  // 刷新按钮
-  var nextCost = refreshCount < FREE_REFRESH ? 0 : 2;
-  el("refreshBtn").disabled = remainingPoints() < nextCost || team.length >= 3;
-  el("refreshBtn").textContent = nextCost === 0 ? ("刷新 · 免费（"+(FREE_REFRESH-refreshCount)+"次）") : "刷新 · 2牛马值";
-  // 羁绊预览
-  var bonds = activeBonds();
-  var all = BONDS.map(function(b){
-    var active = bonds.indexOf(b) !== -1;
-    var have = b.members.filter(function(m){ return team.indexOf(m) !== -1; });
-    return '<div class="bond-row'+(active?'':' off')+'">'+(active?'✨ 已激活':'🔒')+' '+b.name+'（'+have.length+'/'+b.members.length+'）：'+b.desc+'</div>';
-  });
-  el("bondPreview").innerHTML = '<div class="sec-head"><h2 style="font-size:16px">羁绊图鉴</h2></div>' + all.join("");
-  var names = team.map(function(id){ return legendById(id).name; });
-  el("teamSummary").textContent = names.length ? names.join(" · ") : "还没招到人";
-}
-
-function effectText(mod){
-  var labels = {rep:"口碑",safe:"安全",biz:"营商",net:"人脉",budget:"预算",energy:"电量",score:"绩效"};
-  var parts = [];
-  for(var k in mod){ if(mod[k]){ parts.push(labels[k]+" "+signed(mod[k])); } }
-  return parts.join("，") || "无";
-}
-
-/* 开局 */
-function startGame(){
-  var p = personaById(selectedPersona);
-  state = {
-    persona: selectedPersona, abilities: ownedAbilities.slice(), team: team.slice(), round: 0,
-    rep:55, safe:58, biz:52, net:50, budget:60, energy:70, risk:25, score:0,
-    history: []
-  };
-  state.abilities.forEach(function(id){
-    var a = abilityById(id);
-    if(a.start){ for(var k in a.start){ state[k] = clamp(state[k] + a.start[k], 0, 100); } }
-  });
-  el("teamScreen").classList.add("hidden");
-  el("gameScreen").classList.remove("hidden");
-  el("personaLabel").textContent = "沈星 · " + p.name;
-  renderEvent();
-  renderDashboard();
-  window.scrollTo(0,0);
-}
-
-function currentEvent(){ return EVENTS[state.round]; }
-
-function renderEvent(){
-  var ev = currentEvent();
-  el("roundLabel").textContent = "第 " + (state.round+1) + " / 3 件事";
-  el("progress").style.width = (state.round/3*100) + "%";
-  el("progressText").textContent = state.round + "/3";
-  el("dayTag").textContent = ev.day + " · " + ev.tag;
-  el("eventTitle").textContent = ev.title;
-  el("eventOS").textContent = ev.os;
-  el("clues").innerHTML = "<b>研判线索</b> " + ev.clues.map(function(s){ return "<span>"+s+"</span>"; }).join("");
-  var box = el("choices");
-  box.innerHTML = "";
-  ev.choices.forEach(function(c, i){
-    var locked = c.req && !hasAbility(c.req);
-    var btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "choice" + (locked ? " locked" : (c.req ? " unlocked" : ""));
-    if(locked) btn.disabled = true;
-    var lockNote = locked ? ('<span class="req-lock">🔒 需要能力「'+abilityById(c.req).name+'」</span>') : '';
-    btn.innerHTML = '<div class="choice-key">'+["A","B","C","D","E"][i]+'</div>'+
-      '<div><b>'+c.t+'</b><span class="os">'+c.os+'</span><span class="hint">'+c.hint+'</span>'+lockNote+'</div>';
-    if(!locked) btn.addEventListener("click", function(){ applyChoice(c); });
-    box.appendChild(btn);
-  });
-}
-
-function currentMods(){
-  var m = {rep:0,safe:0,biz:0,net:0,budget:0,energy:0,risk:0,score:0};
-  var p = personaById(state.persona);
