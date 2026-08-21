@@ -607,3 +607,425 @@ var state = null;
 function personaById(id){ for(var i=0;i<PERSONAS.length;i++){ if(PERSONAS[i].id===id) return PERSONAS[i]; } return PERSONAS[0]; }
 function abilityById(id){ for(var i=0;i<ABILITIES.length;i++){ if(ABILITIES[i].id===id) return ABILITIES[i]; } return null; }
 function legendById(id){ for(var i=0;i<LEGENDARIES.length;i++){ if(LEGENDARIES[i].id===id) return LEGENDARIES[i]; } return null; }
+function hasAbility(id){ return ownedAbilities.indexOf(id) !== -1; }
+function abilityCost(){ return ownedAbilities.reduce(function(s,id){ return s + abilityById(id).cost; }, 0); }
+function refreshCostTotal(){ return Math.max(0, refreshCount - FREE_REFRESH) * 2; }
+function remainingPoints(){ return POINTS - abilityCost() - refreshCostTotal(); }
+
+function renderPersonas(){
+  el("personaGrid").innerHTML = "";
+  PERSONAS.forEach(function(p){
+    var c = document.createElement("button");
+    c.type = "button";
+    c.className = "persona-card" + (selectedPersona===p.id ? " selected":"");
+    c.innerHTML = "<i>"+p.icon+"</i><b>"+p.name+"</b><span class='tag'>"+p.tag+"</span><p>"+p.desc+"</p>";
+    c.addEventListener("click", function(){ selectedPersona=p.id; el("selectedPersonaText").textContent=p.icon+" "+p.name+" · "+p.tag; renderPersonas(); });
+    el("personaGrid").appendChild(c);
+  });
+}
+
+function renderShop(){
+  el("shopPoints").textContent = remainingPoints();
+  var rem = remainingPoints();
+  el("shopGrid").innerHTML = ABILITIES.map(function(a){
+    var owned = hasAbility(a.id);
+    var afford = rem >= a.cost;
+    var unlockTxt = a.unlock ? ('<span class="unlock">🔓 解锁「'+a.unlock.label+'」类选项</span>') : '';
+    var costHtml = owned ? '<span class="got">✓ 已拥有</span>' : ('<b>'+a.cost+'</b><span>牛马值</span>');
+    return '<button type="button" class="ability-card'+(owned?' owned':'')+'" data-id="'+a.id+'"'+( (!owned && !afford) ? ' disabled' : '')+'>'+
+      '<span class="ability-icon">'+a.icon+'</span>'+
+      '<span class="info"><b>'+a.name+'</b>'+unlockTxt+'<p>'+a.desc+'</p></span>'+
+      '<span class="ability-cost">'+costHtml+'</span></button>';
+  }).join("");
+  el("shopGrid").querySelectorAll("[data-id]").forEach(function(b){
+    b.addEventListener("click", function(){ toggleAbility(b.getAttribute("data-id")); });
+  });
+  var owned = ownedAbilities.map(function(id){ return abilityById(id).icon+abilityById(id).name; });
+  el("ownedSummary").textContent = owned.length ? owned.join(" · ") : "还没选，两手空空就上路？";
+}
+
+function toggleAbility(id){
+  if(hasAbility(id)){ ownedAbilities.splice(ownedAbilities.indexOf(id),1); }
+  else{
+    var a = abilityById(id);
+    if(remainingPoints() < a.cost){ toast("牛马值不够了"); return; }
+    ownedAbilities.push(id);
+  }
+  renderShop();
+}
+
+/* 队伍系统 */
+function activeBonds(){
+  return BONDS.filter(function(b){
+    return b.members.every(function(m){ return team.indexOf(m) !== -1; });
+  });
+}
+function refreshLegends(){
+  var pool = LEGENDARIES.filter(function(l){ return team.indexOf(l.id) === -1 && drawnLegends.indexOf(l.id) === -1; });
+  var picks = shuffle(pool).slice(0, 3);
+  drawnLegends = picks.map(function(l){ return l.id; });
+  renderTeam();
+}
+function recruitLegend(id){
+  if(team.length >= 3){ toast("最多签 3 人"); return; }
+  team.push(id);
+  drawnLegends = [];
+  renderTeam();
+  toast("已招入 " + legendById(id).name);
+}
+function shuffle(a){ a=a.slice(); for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+
+function renderTeam(){
+  el("teamPoints").textContent = remainingPoints();
+  // 槽位
+  el("teamSlots").innerHTML = [0,1,2].map(function(i){
+    if(team[i]){ var l=legendById(team[i]); return '<div class="slot filled">'+l.icon+' '+l.name+'</div>'; }
+    return '<div class="slot">空位 '+(i+1)+'</div>';
+  }).join("");
+  // 候选
+  el("legendGrid").innerHTML = drawnLegends.length ? drawnLegends.map(function(id){
+    var l = legendById(id);
+    var eff = effectText(l.mod);
+    return '<article class="legend-card"><span class="avatar">'+l.icon+'</span><div><h3>'+l.name+'<span class="dy">'+l.dy+'</span><span class="title">'+l.title+'</span></h3>'+
+      '<p>'+l.desc+'</p><span class="eff">'+eff+'</span>'+
+      '<button class="btn gold small" data-recruit="'+l.id+'"'+(team.length>=3?' disabled':'')+'>招募</button></div></article>';
+  }).join("") : '<div class="empty">点「刷新」抽三位传奇人物。</div>';
+  el("legendGrid").querySelectorAll("[data-recruit]").forEach(function(b){
+    b.addEventListener("click", function(){ recruitLegend(b.getAttribute("data-recruit")); });
+  });
+  // 刷新按钮
+  var nextCost = refreshCount < FREE_REFRESH ? 0 : 2;
+  el("refreshBtn").disabled = remainingPoints() < nextCost || team.length >= 3;
+  el("refreshBtn").textContent = nextCost === 0 ? ("刷新 · 免费（"+(FREE_REFRESH-refreshCount)+"次）") : "刷新 · 2牛马值";
+  // 羁绊预览
+  var bonds = activeBonds();
+  var all = BONDS.map(function(b){
+    var active = bonds.indexOf(b) !== -1;
+    var have = b.members.filter(function(m){ return team.indexOf(m) !== -1; });
+    return '<div class="bond-row'+(active?'':' off')+'">'+(active?'✨ 已激活':'🔒')+' '+b.name+'（'+have.length+'/'+b.members.length+'）：'+b.desc+'</div>';
+  });
+  el("bondPreview").innerHTML = '<div class="sec-head"><h2 style="font-size:16px">羁绊图鉴</h2></div>' + all.join("");
+  var names = team.map(function(id){ return legendById(id).name; });
+  el("teamSummary").textContent = names.length ? names.join(" · ") : "还没招到人";
+}
+
+function effectText(mod){
+  var labels = {rep:"口碑",safe:"安全",biz:"营商",net:"人脉",budget:"预算",energy:"电量",score:"绩效"};
+  var parts = [];
+  for(var k in mod){ if(mod[k]){ parts.push(labels[k]+" "+signed(mod[k])); } }
+  return parts.join("，") || "无";
+}
+
+/* 开局 */
+function startGame(){
+  var p = personaById(selectedPersona);
+  state = {
+    persona: selectedPersona, abilities: ownedAbilities.slice(), team: team.slice(), round: 0, deck: buildDeck(),
+    rep:55, safe:58, biz:52, net:50, budget:60, energy:70, risk:25, score:0,
+    history: []
+  };
+  state.abilities.forEach(function(id){
+    var a = abilityById(id);
+    if(a.start){ for(var k in a.start){ state[k] = clamp(state[k] + a.start[k], 0, 100); } }
+  });
+  el("teamScreen").classList.add("hidden");
+  el("gameScreen").classList.remove("hidden");
+  el("personaLabel").textContent = "沈星 · " + p.name;
+  renderEvent();
+  renderDashboard();
+  window.scrollTo(0,0);
+}
+
+function currentEvent(){ return state.deck[state.round]; }
+
+function renderEvent(){
+  var ev = currentEvent();
+  var total = state.deck.length;
+  el("roundLabel").textContent = "第 " + (state.round+1) + " / " + total + " 件事";
+  el("progress").style.width = (state.round/total*100) + "%";
+  el("progressText").textContent = state.round + "/" + total;
+  if(ev.aiPending){
+    el("dayTag").textContent = "第 1 天 · 随机";
+    el("eventTitle").textContent = "未知事件";
+    el("eventOS").textContent = "抵达本周期后生成。AI 会按你当前的人设、队伍和局势，生成一个贴合语气的随机事件。";
+    el("clues").innerHTML = "<b>研判线索</b> <span>事件尚未生成</span>";
+    el("choices").innerHTML = "";
+    if(el("aiOverlay").classList.contains("hidden")){
+      el("aiStatus").textContent = "";
+      el("aiGenerateBtn").disabled = false;
+      el("aiGenerateBtn").textContent = "生成动态事件";
+      el("aiOverlay").classList.remove("hidden");
+    }
+    renderDashboard();
+    return;
+  }
+  el("dayTag").textContent = ev.day + " · " + ev.tag;
+  el("eventTitle").textContent = ev.title;
+  el("eventOS").textContent = ev.os;
+  el("clues").innerHTML = "<b>研判线索</b> " + ev.clues.map(function(s){ return "<span>"+s+"</span>"; }).join("");
+  var box = el("choices");
+  box.innerHTML = "";
+  ev.choices.forEach(function(c, i){
+    var locked = c.req && !hasAbility(c.req);
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "choice" + (locked ? " locked" : (c.req ? " unlocked" : ""));
+    if(locked) btn.disabled = true;
+    var lockNote = locked ? ('<span class="req-lock">🔒 需要能力「'+abilityById(c.req).name+'」</span>') : '';
+    btn.innerHTML = '<div class="choice-key">'+["A","B","C","D","E"][i]+'</div>'+
+      '<div><b>'+c.t+'</b><span class="os">'+c.os+'</span><span class="hint">'+c.hint+'</span>'+lockNote+'</div>';
+    if(!locked) btn.addEventListener("click", function(){ applyChoice(c); });
+    box.appendChild(btn);
+  });
+}
+
+function currentMods(){
+  var m = {rep:0,safe:0,biz:0,net:0,budget:0,energy:0,risk:0,score:0};
+  var p = personaById(state.persona);
+  for(var k in p.mod){ m[k] += p.mod[k]; }
+  state.abilities.forEach(function(id){
+    var a = abilityById(id);
+    if(a.mod){ for(var k2 in a.mod){ m[k2] += a.mod[k2]; } }
+  });
+  state.team.forEach(function(id){
+    var l = legendById(id);
+    if(l && l.mod){ for(var k3 in l.mod){ m[k3] += l.mod[k3]; } }
+  });
+  activeBonds().forEach(function(b){ for(var k4 in b.mod){ m[k4] += b.mod[k4]; } });
+  return m;
+}
+
+function renderDashboard(){
+  el("budgetText").textContent = state.budget;
+  el("energyText").textContent = state.energy;
+  el("riskText").textContent = state.risk;
+  el("mRep").textContent = state.rep;
+  el("mSafe").textContent = state.safe;
+  el("mBiz").textContent = state.biz;
+  el("mNet").textContent = state.net;
+  el("scoreText").textContent = String(state.score).padStart(3,"0");
+  el("metrics").innerHTML = METRICS.map(function(m){
+    var v = state[m.key];
+    var cls = v<30 ? "danger" : v<50 ? "warn" : "";
+    return '<div class="m-row"><span class="ic">'+m.icon+'</span><span class="nm">'+m.label+'</span><div class="bar"><i class="'+cls+'" style="width:'+v+'%"></i></div><b>'+v+'</b></div>';
+  }).join("");
+  el("abilityChips").innerHTML = state.abilities.length ? state.abilities.map(function(id){ var a=abilityById(id); return '<span class="perk-chip">'+a.icon+' '+a.name+'</span>'; }).join("") : '<span class="empty">这局没换能力，纯靠命硬。</span>';
+  // 队伍面板
+  var teamHtml = state.team.length ? state.team.map(function(id){ var l=legendById(id); return '<div class="team-item"><span class="ic">'+l.icon+'</span><b>'+l.name+'</b><span>'+effectText(l.mod)+'</span></div>'; }).join("") : '<span class="empty">孤军奋战。</span>';
+  var bonds = activeBonds();
+  var bondHtml = bonds.length ? bonds.map(function(b){ return '<div class="bond-tag">✨ '+b.name+'：'+b.desc+'</div>'; }).join("") : '<span class="empty">没有激活羁绊。</span>';
+  el("teamPanel").innerHTML = teamHtml + bondHtml;
+  if(!state.history.length){
+    el("historyLog").innerHTML = '<div class="empty">还没干啥，先吃个早饭。</div>';
+  } else {
+    el("historyLog").innerHTML = state.history.slice().reverse().map(function(h){
+      return '<div class="log-item"><strong>'+h.title+'</strong><br>'+h.choice+' · '+h.verdict+'</div>';
+    }).join("");
+  }
+}
+
+function applyChoice(c){
+  var ev = currentEvent();
+  var e = clone(c.e);
+  var mods = currentMods();
+  for(var k in mods){ e[k] = (e[k]||0) + mods[k]; }
+  if(c.field && hasAbility("drive")){ e.budget = (e.budget||0) + 1; }
+  ["rep","safe","biz","net"].forEach(function(k){ state[k] = clamp(state[k] + (e[k]||0), 0, 100); });
+  state.budget = clamp(state.budget + (e.budget||0), 0, 100);
+  state.energy = clamp(state.energy + (e.energy||0), 0, 100);
+  state.risk = clamp(state.risk + (e.risk||0), 0, 100);
+  state.score += (e.score||0);
+  var net = (e.rep||0)+(e.safe||0)+(e.biz||0)+(e.net||0);
+  var verdict = net >= 6 ? "稳了" : net <= -6 ? "翻车" : "凑合";
+  state.history.push({ title: ev.title, choice: c.t, verdict: verdict });
+  showResult(c, e);
+  renderDashboard();
+  el("scoreText").textContent = String(state.score).padStart(3,"0");
+}
+
+function showResult(c, e){
+  el("resultOutcomeLabel").textContent = currentEvent().day + " · 处理完毕";
+  el("resultTitle").textContent = c.t;
+  el("resultScoreLine").textContent = "绩效 " + signed(e.score||0);
+  el("resultStory").textContent = c.r;
+  el("resultInsight").textContent = c.i;
+  var labels = {rep:"口碑",safe:"安全",biz:"营商",net:"人脉",budget:"预算",energy:"电量",risk:"背锅值",score:"绩效"};
+  var chips = [];
+  for(var k in e){
+    if(e[k] === 0) continue;
+    var cls = k==="risk" ? (e[k]>0?"down":"up") : (e[k]>0?"up":"down");
+    chips.push('<i class="'+cls+'">'+labels[k]+' '+signed(e[k])+'</i>');
+  }
+  el("deltaChips").innerHTML = chips.join("");
+  el("nextBtn").textContent = state.round >= state.deck.length - 1 ? "下班打卡" : "下一件事";
+  el("resultOverlay").classList.remove("hidden");
+}
+
+function next(){
+  el("resultOverlay").classList.add("hidden");
+  if(hasAbility("meditate")){ state.energy = clamp(state.energy + 1, 0, 100); }
+  if(state.round >= state.deck.length - 1){ endSlice(); return; }
+  state.round += 1;
+  renderEvent();
+  renderDashboard();
+  window.scrollTo(0,0);
+}
+
+function buildAiPrompt(){
+  var p = personaById(state.persona);
+  var teamNames = state.team.map(function(id){ return legendById(id).name; }).join("、") || "无";
+  var abilityNames = state.abilities.map(function(id){ return abilityById(id).name; }).join("、") || "无";
+  return "你是「市场监管模拟器」的事件生成器。玩家「沈星」是岚川市市场监管局基层所的年轻公务员，25岁，自嘲打工人但心里有杆秤。请生成1个随机突发事件。" +
+    "要求：事件涉及食品安全、特种设备、执法、知识产权、平台经济等市场监管领域，信息不完整、有取舍；三个方案严格按 A高投入攻坚、B中投入稳推、C低投入节流，各有代价，禁止全维度占优项；语气是第一人称内心OS、自嘲打工人、接地气有梗但不油腻；所有字符串简短（context不超过40字，其余不超过22字），只用整数。" +
+    "当前局势：口碑" + state.rep + "、安全" + state.safe + "、营商" + state.biz + "、人脉" + state.net + "；预算" + state.budget + "、电量" + state.energy + "、背锅值" + state.risk + "；人设：" + p.name + "；队伍：" + teamNames + "；能力：" + abilityNames + "。" +
+    "只输出一个JSON对象，不要代码围栏、不要解释。字段：title(事件标题)、urgency(紧急或重要或关注)、category(分类)、context(背景描述)、signals(3个线索字符串的数组)、choices(3个方案的数组，每个含 title 标题、desc 一句说明、effects 对象含 rep口碑/safe安全/biz营商/net人脉 四个-9到9的整数、costs 对象含 budget预算/energy电量 两个正数表示消耗 与 risk背锅值 一个整数负数为降低、result 结果文本、insight 复盘提示)。";
+}
+
+function parseModelJson(content){
+  if(typeof content !== "string" || !content.trim()) throw new Error("空内容");
+  var text = content.trim();
+  var start = text.indexOf("{");
+  if(start < 0) throw new Error("无JSON");
+  text = text.slice(start);
+  try{ return JSON.parse(text); }catch(e){}
+  var end = text.lastIndexOf("}");
+  if(end > 0){ try{ return JSON.parse(text.slice(0, end + 1)); }catch(e2){} }
+  throw new Error("JSON不完整");
+}
+
+function mapAiEvent(raw){
+  if(!raw || !raw.choices || raw.choices.length < 2) throw new Error("结构不完整");
+  var ev = {
+    day:"第 1 天 · 随机", tag:"随机",
+    title: String(raw.title || "突发随机事件").slice(0, 30),
+    os: String(raw.context || "").slice(0, 60),
+    clues: (raw.signals || []).slice(0, 3).map(function(s){ return String(s).slice(0, 18); }),
+    choices: [], isRandom: true, aiGenerated: true
+  };
+  while(ev.clues.length < 3) ev.clues.push("信息仍在变化");
+  raw.choices.slice(0, 3).forEach(function(c, i){
+    var fx = c.effects || {};
+    var cost = c.costs || {};
+    var e = {
+      rep: clamp(parseInt(fx.rep, 10) || 0, -9, 9),
+      safe: clamp(parseInt(fx.safe, 10) || 0, -9, 9),
+      biz: clamp(parseInt(fx.biz, 10) || 0, -9, 9),
+      net: clamp(parseInt(fx.net, 10) || 0, -9, 9),
+      budget: -clamp(Math.abs(parseInt(cost.budget, 10) || 10), 1, 20),
+      energy: -clamp(Math.abs(parseInt(cost.energy, 10) || 10), 1, 20),
+      risk: clamp(parseInt(cost.risk, 10) || 0, -9, 9)
+    };
+    e.score = Math.max(0, Math.round((e.rep + e.safe + e.biz + e.net) * 1.5));
+    ev.choices.push({
+      t: String(c.title || "方案" + (i + 1)).slice(0, 20),
+      os: String(c.desc || "").slice(0, 28),
+      hint: "AI 生成 · " + ["高投入","中投入","低投入"][i],
+      e: e,
+      r: String(c.result || "事情处理完了，具体怎么样你自己掂量。").slice(0, 100),
+      i: String(c.insight || "复盘：别急着甩锅，先想清楚再动手。").slice(0, 60)
+    });
+  });
+  return ev;
+}
+
+async function generateAiEvent(){
+  var btn = el("aiGenerateBtn");
+  btn.disabled = true;
+  btn.textContent = "生成中…";
+  el("aiStatus").textContent = "正在按你当前的人设和局势生成随机事件…";
+  try{
+    var ctrl = new AbortController();
+    var timer = setTimeout(function(){ ctrl.abort(); }, 20000);
+    var response = await fetch("/ai", {
+      method: "POST",
+      signal: ctrl.signal,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "deepseek-v4-flash",
+        messages: [
+          { role: "system", content: "你是市场监管模拟器的事件生成器，只输出简短有效的JSON对象，不输出解释。" },
+          { role: "user", content: buildAiPrompt() }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.95,
+        max_tokens: 1500,
+        stream: false
+      })
+    });
+    clearTimeout(timer);
+    if(!response.ok) throw new Error("接口 " + response.status);
+    var payload = await response.json();
+    var content = payload && payload.choices && payload.choices[0] && payload.choices[0].message && payload.choices[0].message.content;
+    var ev = mapAiEvent(parseModelJson(content));
+    state.deck[state.round] = ev;
+    el("aiOverlay").classList.add("hidden");
+    renderEvent();
+    toast("AI 随机事件已生成");
+  }catch(e){
+    replaceWithOfflineEvent("AI 没接上，已切换离线事件");
+  }
+}
+
+function replaceWithOfflineEvent(msg){
+  var off = clone(OFFLINE_EVENTS[Math.floor(Math.random() * OFFLINE_EVENTS.length)]);
+  off.isRandom = true;
+  off.offlineGenerated = true;
+  off.day = "第 1 天 · 随机";
+  off.tag = "随机";
+  state.deck[state.round] = off;
+  el("aiOverlay").classList.add("hidden");
+  renderEvent();
+  toast(msg || "已切换离线事件");
+}
+
+function endSlice(){
+  el("gameScreen").classList.add("hidden");
+  el("endScreen").classList.remove("hidden");
+  el("endScore").textContent = String(state.score).padStart(3,"0");
+  el("endRep").textContent = state.rep;
+  el("endRisk").textContent = state.risk;
+  window.scrollTo(0,0);
+}
+
+function reset(){
+  el("endScreen").classList.add("hidden");
+  el("opening").classList.remove("hidden");
+  selectedPersona = null;
+  ownedAbilities = [];
+  team = [];
+  drawnLegends = [];
+  refreshCount = 0;
+  el("selectedPersonaText").textContent = "先选一个人设";
+  renderPersonas();
+  window.scrollTo(0,0);
+}
+
+el("startBtn").addEventListener("click", function(){
+  if(!selectedPersona){ toast("先在上面选一个人设，再继续"); return; }
+  el("opening").classList.add("hidden");
+  el("shopScreen").classList.remove("hidden");
+  renderShop();
+  window.scrollTo(0,0);
+});
+el("confirmShopBtn").addEventListener("click", function(){
+  el("shopScreen").classList.add("hidden");
+  el("teamScreen").classList.remove("hidden");
+  refreshLegends();
+  window.scrollTo(0,0);
+});
+el("refreshBtn").addEventListener("click", function(){
+  var nextCost = refreshCount < FREE_REFRESH ? 0 : 2;
+  if(remainingPoints() < nextCost){ toast("牛马值不够了"); return; }
+  refreshCount += 1;
+  refreshLegends();
+});
+el("confirmTeamBtn").addEventListener("click", startGame);
+el("nextBtn").addEventListener("click", next);
+el("aiGenerateBtn").addEventListener("click", generateAiEvent);
+el("aiOfflineBtn").addEventListener("click", function(){ replaceWithOfflineEvent("已切换离线事件"); });
+el("replayBtn").addEventListener("click", reset);
+
+renderPersonas();
+</script>
+</body>
+</html>
