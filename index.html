@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#173f39">
+<title>市场监管模拟器</title>
+<style>
+  :root{
+    --ink:#172724; --ink2:#5b6b66; --paper:#f4efe5; --green:#173f39; --green2:#24584f;
+    --green3:#dce8e1; --red:#ba3e32; --reddark:#8f2d25; --gold:#c4933e; --goldsoft:#efe0b8;
+    --line:rgba(23,63,57,.14); --shadow:0 14px 44px rgba(23,39,36,.10); --r:20px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html{scroll-behavior:smooth}
+  body{margin:0;min-height:100vh;color:var(--ink);background:radial-gradient(circle at 85% 0%, rgba(196,147,62,.14), transparent 24rem), var(--paper);font-family:"PingFang SC","Microsoft YaHei","Noto Sans CJK SC",Arial,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:env(safe-area-inset-bottom)}
+  button{font:inherit;border:0;cursor:pointer;color:inherit}
+  button:focus-visible{outline:3px solid rgba(196,147,62,.5);outline-offset:2px}
+  .hidden{display:none !important}
+  .wrap{width:min(600px,calc(100% - 22px));margin:0 auto}
+  .topbar{position:sticky;top:0;z-index:30;min-height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 14px;border-bottom:1px solid var(--line);background:rgba(244,239,229,.92);backdrop-filter:blur(12px)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:850}
+  .seal{width:32px;height:32px;display:grid;place-items:center;color:#fff;background:var(--red);border-radius:9px 9px 9px 4px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.22);font-family:STKaiti,KaiTi,serif;font-size:17px;transform:rotate(-2deg)}
+  .brand small{display:block;color:var(--ink2);font-size:10px;letter-spacing:.1em;font-weight:700;margin-top:1px}
+  .eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--red);font-size:12px;font-weight:900;letter-spacing:.14em}
+  .eyebrow::before{content:"";width:20px;height:2px;background:currentColor}
+  .opening{padding:24px 0 40px}
+  .opening h1{margin:14px 0 8px;font-size:32px;line-height:1.08;letter-spacing:-.03em;font-weight:900}
+  .opening h1 em{color:var(--green);font-style:normal}
+  .intro{color:var(--ink2);font-size:14px;line-height:1.8;margin:0}
+  .intro .os{color:#8a7a63;font-style:italic}
+  .sec-head{display:flex;align-items:end;justify-content:space-between;margin:26px 0 12px}
+  .sec-head h2{margin:0;font-size:20px;letter-spacing:-.02em}
+  .sec-head p{margin:3px 0 0;color:var(--ink2);font-size:12px}
+  .persona-grid{display:grid;gap:10px}
+  .persona-card{position:relative;padding:16px;border:1px solid var(--line);border-radius:var(--r);background:rgba(255,255,255,.86);text-align:left;box-shadow:0 5px 16px rgba(23,39,36,.04)}
+  .persona-card.selected{border-color:rgba(23,63,57,.5);background:#fff;box-shadow:var(--shadow)}
+  .persona-card i{font-style:normal;font-size:24px}
+  .persona-card b{display:block;margin:8px 0 3px;font-size:17px}
+  .persona-card .tag{color:var(--red);font-size:12px;font-weight:800}
+  .persona-card p{margin:6px 0 0;color:var(--ink2);font-size:13px;line-height:1.55}
+  /* shop */
+  .shop-bar{position:sticky;top:56px;z-index:25;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);background:rgba(244,239,229,.92);backdrop-filter:blur(12px)}
+  .shop-bar b{font:700 20px Georgia,serif;color:var(--green)}
+  .shop-bar span{color:var(--ink2);font-size:12px}
+  .ability-grid{display:grid;gap:10px;margin-top:16px}
+  .ability-card{position:relative;padding:15px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.86);text-align:left;display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:start}
+  .ability-card.owned{border-color:var(--gold);background:#fff;box-shadow:0 8px 20px rgba(23,39,36,.08)}
+  .ability-card:disabled{opacity:.42}
+  .ability-icon{width:44px;height:44px;display:grid;place-items:center;border-radius:12px;background:var(--green3);font-size:22px}
+  .ability-card .info b{display:block;font-size:15px}
+  .ability-card .info .unlock{display:block;margin-top:5px;color:var(--green);font-size:12px;font-weight:800;line-height:1.4}
+  .ability-card .info p{margin:5px 0 0;color:var(--ink2);font-size:12px;line-height:1.5}
+  .ability-cost{text-align:right;flex:none}
+  .ability-cost b{display:block;color:var(--red);font:700 16px Georgia,serif}
+  .ability-cost span{color:#9a8873;font-size:10px}
+  .ability-cost .got{display:block;margin-top:6px;padding:4px 8px;border-radius:999px;color:#fff;background:var(--gold);font-size:11px;font-weight:900}
+  .start-dock{position:sticky;bottom:12px;z-index:20;margin-top:22px;padding:11px 12px 11px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;border:1px solid rgba(255,255,255,.25);border-radius:18px;color:#fff;background:rgba(23,39,36,.95);box-shadow:0 16px 40px rgba(23,39,36,.28)}
+  .dock-role small{display:block;color:rgba(255,255,255,.55);margin-bottom:2px;font-size:11px}
+  .dock-role strong{display:block;font-size:14px}
+  .btn{min-height:46px;padding:0 18px;border-radius:13px;font-weight:800;font-size:15px}
+  .btn.solid{background:var(--green);color:#fff;box-shadow:0 8px 18px rgba(23,63,57,.2)}
+  .btn.solid:disabled{cursor:not-allowed;opacity:.4}
+  .btn.gold{background:var(--gold);color:#172724}
+  /* game */
+  #gameScreen{background:#efeadd}
+  .game-topbar{position:sticky;top:0;z-index:40;padding:10px 14px 12px;color:#fff;background:var(--green)}
+  .game-top-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .game-brand{display:flex;align-items:center;gap:9px;min-width:0}
+  .game-brand strong{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .game-brand small{color:rgba(255,255,255,.66);font-size:11px}
+  .score-chip{min-width:70px;padding:6px 10px;border-radius:11px;background:var(--red);text-align:center}
+  .score-chip small{display:block;opacity:.72;font-size:10px}
+  .score-chip b{font:700 20px/1 Georgia,serif}
+  .status-strip{display:flex;gap:7px;margin-top:9px}
+  .status-chip{flex:1;padding:7px 8px;border-radius:10px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.1)}
+  .status-chip span{display:block;color:rgba(255,255,255,.62);font-size:10px}
+  .status-chip b{font:700 16px Georgia,serif}
+  .status-chip.danger b{color:#ffd9a0}
+  .metrics-row{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:10px}
+  .metric-chip{padding:7px 4px;border-radius:9px;background:rgba(255,255,255,.08);text-align:center}
+  .metric-chip span{display:block;color:rgba(255,255,255,.6);font-size:10px}
+  .metric-chip b{font:700 15px Georgia,serif}
+  .progress-row{display:flex;align-items:center;gap:9px;margin-top:10px;color:rgba(255,255,255,.7);font-size:11px}
+  .progress-bar{flex:1;height:4px;border-radius:999px;background:rgba(255,255,255,.15);overflow:hidden}
+  .progress-bar i{display:block;height:100%;width:0;border-radius:inherit;background:var(--gold);transition:width .4s}
+  .game-main{padding:16px 0 40px}
+  .day-tag{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;background:var(--green3);color:var(--green);font-size:12px;font-weight:800;margin-bottom:10px}
+  .event-card{position:relative;padding:20px 18px;overflow:hidden;border:1px solid var(--line);border-radius:8px 24px 24px 24px;background:rgba(255,255,255,.9);box-shadow:0 12px 36px rgba(23,39,36,.07)}
+  .event-card::before{content:"";position:absolute;top:0;left:0;width:5px;height:100%;background:var(--red)}
+  .event-card h2{margin:0 0 10px;font-size:23px;line-height:1.28;letter-spacing:-.02em}
+  .os-box{margin:0 0 12px;padding:11px 13px;border-radius:12px;background:#f3ede0;color:#6b5d49;font-size:13px;line-height:1.7}
+  .os-box .who{color:var(--red);font-weight:900;font-size:11px;letter-spacing:.05em;display:block;margin-bottom:3px}
+  .clues{display:flex;flex-wrap:wrap;gap:6px 13px;margin-bottom:6px;font-size:12px;color:var(--ink2)}
+  .clues b{color:var(--green)}
+  .clues span::before{content:"·";color:var(--gold);margin-right:5px;font-weight:900}
+  .choice-title{margin:18px 0 10px;color:var(--ink2);font-size:13px;font-weight:900}
+  .choices{display:grid;gap:9px}
+  .choice{width:100%;padding:14px;display:grid;grid-template-columns:28px 1fr;gap:11px;align-items:start;border:1px solid var(--line);border-radius:15px;background:rgba(250,248,243,.72);text-align:left}
+  .choice:active{background:#fff;border-color:rgba(23,63,57,.42)}
+  .choice.locked{opacity:.5}
+  .choice.unlocked{border-color:var(--gold)}
+  .choice-key{width:28px;height:28px;display:grid;place-items:center;border:1px solid var(--line);border-radius:9px;background:#fff;color:var(--green);font:800 12px Georgia,serif}
+  .choice b{display:block;margin-bottom:3px;font-size:15px}
+  .choice .os{color:#8a7a63;font-size:12px;font-style:italic;line-height:1.5;display:block;margin-bottom:7px}
+  .choice .hint{display:block;padding:7px 9px;border-radius:8px;color:#755318;background:var(--goldsoft);font-size:12px;line-height:1.45;font-weight:700}
+  .choice .req-lock{display:block;margin-top:7px;color:var(--red);font-size:12px;font-weight:900}
+  .dashboard{margin-top:14px;display:grid;gap:12px}
+  .panel{padding:15px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.72)}
+  .panel-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+  .panel-title b{font-size:14px}
+  .panel-title span{color:var(--ink2);font-size:10px;letter-spacing:.08em}
+  .metric-list{display:grid;gap:10px}
+  .m-row{display:flex;align-items:center;gap:10px;font-size:13px}
+  .m-row .ic{width:26px;height:26px;display:grid;place-items:center;border-radius:8px;background:var(--green3);font-size:14px;flex:none}
+  .m-row .nm{width:52px;flex:none;font-weight:800}
+  .m-row .bar{flex:1;height:7px;border-radius:999px;background:#ded8cd;overflow:hidden}
+  .m-row .bar i{display:block;height:100%;border-radius:inherit;background:var(--green2);transition:width .5s}
+  .m-row .bar i.warn{background:var(--gold)}
+  .m-row .bar i.danger{background:var(--red)}
+  .m-row b{font:700 15px Georgia,serif;width:30px;text-align:right;flex:none}
+  .perk-chips{display:flex;flex-wrap:wrap;gap:6px}
+  .perk-chip{padding:6px 8px;border-radius:8px;color:#684d1e;background:var(--goldsoft);font-size:12px;font-weight:800}
+  .log{display:grid;gap:9px}
+  .log-item{position:relative;padding-left:15px;color:var(--ink2);font-size:12px;line-height:1.5}
+  .log-item::before{content:"";position:absolute;left:0;top:5px;width:6px;height:6px;border:2px solid var(--gold);border-radius:50%;background:#fff}
+  .log-item strong{color:var(--ink)}
+  .empty{color:#877b6c;font-size:12px}
+  .overlay{position:fixed;inset:0;z-index:100;padding:16px;display:grid;place-items:center;background:rgba(15,31,28,.64);backdrop-filter:blur(8px);animation:fade .2s ease}
+  @keyframes fade{from{opacity:0}}
+  .card{width:min(560px,100%);max-height:calc(100vh - 32px);overflow:auto;border-radius:24px;background:var(--paper);box-shadow:0 28px 90px rgba(0,0,0,.3);animation:rise .28s cubic-bezier(.2,.8,.2,1)}
+  @keyframes rise{from{opacity:0;transform:translateY(20px) scale(.98)}}
+  .card-hero{padding:20px 20px 16px;color:#fff;background:var(--green);border-radius:24px 24px 0 0}
+  .card-hero .eyebrow{color:#efc77f}
+  .card-hero h2{margin:9px 0 4px;font-size:20px}
+  .card-hero p{margin:0;color:rgba(255,255,255,.72);font-size:12px}
+  .card-body{padding:18px 20px 22px}
+  .result-story{margin-bottom:13px;padding:13px 15px;border-left:4px solid var(--red);background:#fff;line-height:1.75;font-size:14px}
+  .delta-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:13px}
+  .delta-chips i{padding:5px 8px;border-radius:8px;background:#e8e2d7;font-style:normal;font-size:12px;font-weight:800}
+  .delta-chips i.up{color:#17634d;background:#dcefe6}
+  .delta-chips i.down{color:var(--red);background:#f4dcd7}
+  .insight{display:grid;grid-template-columns:auto 1fr;gap:10px;padding:12px 14px;border-radius:12px;background:var(--goldsoft);color:#5e4822;font-size:13px;line-height:1.65}
+  .insight b{color:var(--reddark);white-space:nowrap}
+  .result-actions{margin-top:18px;display:flex;justify-content:flex-end;gap:9px}
+  .end-screen{min-height:100vh;padding:18px;display:grid;place-items:center;background:radial-gradient(circle at 50% 12%, rgba(196,147,62,.22), transparent 26rem), var(--green)}
+  .end-card{width:min(560px,100%);overflow:hidden;border-radius:26px;background:var(--paper);box-shadow:0 30px 90px rgba(0,0,0,.32)}
+  .end-hero{position:relative;padding:26px;color:#fff;background:var(--reddark);overflow:hidden}
+  .end-hero::after{content:"班";position:absolute;right:-20px;bottom:-44px;font:150px/1 STKaiti,KaiTi,serif;color:rgba(255,255,255,.06)}
+  .end-hero .eyebrow{color:#f1cf91}
+  .end-hero h2{margin:14px 0 6px;font-size:24px}
+  .end-hero p{margin:0;color:rgba(255,255,255,.74);font-size:13px;line-height:1.7}
+  .end-body{padding:22px}
+  .end-body h3{margin:0 0 10px;font-size:16px}
+  .end-score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+  .end-score div{padding:12px;border-radius:12px;background:#ebe5da;text-align:center}
+  .end-score span{display:block;color:var(--ink2);font-size:11px}
+  .end-score b{font:700 20px Georgia,serif}
+  .next-list{display:grid;gap:7px;margin-bottom:16px}
+  .next-list div{padding:10px 12px;border-radius:10px;background:var(--green3);color:var(--green);font-size:13px;font-weight:700;line-height:1.4}
+  .end-actions{display:flex;gap:9px}
+  .end-actions .btn{flex:1}
+  .toast{position:fixed;left:50%;bottom:22px;z-index:150;padding:11px 15px;border-radius:11px;color:#fff;background:rgba(20,35,32,.95);box-shadow:0 10px 26px rgba(0,0,0,.2);transform:translateX(-50%);font-size:13px;animation:rise .25s ease;max-width:88%;text-align:center}
+  @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
+</style>
+</head>
+<body>
+  <section id="opening">
+    <header class="topbar"><div class="brand"><div class="seal">岚</div><div>市场监管模拟器<small>MARKET REGULATION LAB</small></div></div><span class="eyebrow">开局建档</span></header>
+    <main class="wrap opening">
+      <div class="eyebrow">架空城市 · 一个年轻人的监管岗</div>
+      <h1>不是科长，<br>是<em>上班的你我他。</em></h1>
+      <p class="intro">你叫沈星，25，考公上岸两年，在岚川市市场监管局基层所搬砖。<br><br>今天周四——没有尽头的周四。你挤上早高峰，手机电量 62%，兜里是昨晚没报销的外卖小票。科长在群里@你：<span class="os">"小沈，来了先看下这个。"</span></p>
+      <div class="sec-head"><div><h2>先立个职场人设</h2><p>决定你干活的风格，也小幅度改数值。</p></div></div>
+      <div class="persona-grid" id="personaGrid"></div>
+      <div class="start-dock">
+        <div class="dock-role"><small>今天用什么姿势上班</small><strong id="selectedPersonaText">先选一个人设</strong></div>
+        <button class="btn gold" id="startBtn" type="button" disabled>下一步 · 兑换能力</button>
+      </div>
+    </main>
+  </section>
+
+  <section id="shopScreen" class="hidden">
+    <header class="topbar"><div class="brand"><div class="seal">岚</div><div>开局能力兑换<small>入职前 · 兑现牛马值</small></div></div></header>
+    <div class="shop-bar"><span>你的牛马值（这些年被当牛马攒下的血汗）</span><b id="shopPoints">10</b></div>
+    <main class="wrap opening">
+      <div class="eyebrow">每次开局都不一样</div>
+      <h1>把血汗，<br>换成能活命的<em>能力。</em></h1>
+      <p class="intro">10 点牛马值，随便换。有的能力改了你的起始底子，有的能解锁别人选不了的选项。花多花少，这局的路都不一样。</p>
+      <div class="ability-grid" id="shopGrid"></div>
+      <div class="start-dock">
+        <div class="dock-role"><small>已选能力</small><strong id="ownedSummary">还没选，两手空空就上路？</strong></div>
+        <button class="btn gold" id="confirmShopBtn" type="button">确认上路</button>
+      </div>
+    </main>
+  </section>
+
+  <section id="gameScreen" class="hidden">
+    <header class="game-topbar">
+      <div class="game-top-row">
+        <div class="game-brand"><div class="seal">岚</div><div><strong id="personaLabel">沈星</strong><small id="roundLabel">第 1 / 3 件事</small></div></div>
+        <div class="score-chip"><small>绩效</small><b id="scoreText">000</b></div>
+      </div>
+      <div class="status-strip">
+        <div class="status-chip"><span>预算</span><b id="budgetText">60</b></div>
+        <div class="status-chip"><span>电量</span><b id="energyText">70</b></div>
+        <div class="status-chip danger"><span>背锅值</span><b id="riskText">25</b></div>
+      </div>
+      <div class="metrics-row">
+        <div class="metric-chip"><span>👍口碑</span><b id="mRep">55</b></div>
+        <div class="metric-chip"><span>🛡安全</span><b id="mSafe">58</b></div>
+        <div class="metric-chip"><span>🏪营商</span><b id="mBiz">52</b></div>
+        <div class="metric-chip"><span>🤝人脉</span><b id="mNet">50</b></div>
+      </div>
+      <div class="progress-row"><span>今日进度</span><div class="progress-bar"><i id="progress"></i></div><span id="progressText">0/3</span></div>
+    </header>
+    <main class="wrap game-main">
+      <span class="day-tag" id="dayTag">第 1 天 · 上午</span>
+      <article class="event-card">
+        <h2 id="eventTitle">事件标题</h2>
+        <div class="os-box"><span class="who">你心里嘀咕</span><span id="eventOS"></span></div>
+        <div class="clues" id="clues"></div>
+        <p class="choice-title">怎么办？</p>
+        <div class="choices" id="choices"></div>
+      </article>
+      <aside class="dashboard">
+        <section class="panel">
+          <div class="panel-title"><b>你这个人</b><span>WHO YOU ARE</span></div>
+          <div class="metric-list" id="metrics"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-title"><b>你带的能力</b><span>ABILITIES</span></div>
+          <div class="perk-chips" id="abilityChips"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-title"><b>今天都干了啥</b><span>LOG</span></div>
+          <div class="log" id="historyLog"><div class="empty">还没干啥，先吃个早饭。</div></div>
+        </section>
+      </aside>
+    </main>
+  </section>
+
+  <section id="endScreen" class="end-screen hidden">
+    <div class="end-card">
+      <div class="end-hero">
+        <div class="eyebrow">切片到此为止</div>
+        <h2>下班，打卡。</h2>
+        <p>这只是开头三天。你大概闻出味道了——完整版会从这里接上 24 天。</p>
+      </div>
+      <div class="end-body">
+        <h3>这三天你攒下的绩效</h3>
+        <div class="end-score">
+          <div><span>绩效</span><b id="endScore">000</b></div>
+          <div><span>口碑</span><b id="endRep">55</b></div>
+          <div><span>背锅值</span><b id="endRisk">25</b></div>
+        </div>
+        <h3>完整版还会加这些</h3>
+        <div class="next-list">
+          <div>🧑‍🤝‍🧑 自己组干部队伍，同事有性格、能凑羁绊</div>
+          <div>🎲 AI 随机事件（走后端代理，key 不落前端）</div>
+          <div>📈 阶段末能力卡 + 年终评级（SSS~寄，写成"年终总结"味）</div>
+          <div>🗓 24 天，有起承转合、有回调、有硬仗</div>
+        </div>
+        <div class="end-actions">
+          <button class="btn solid" id="replayBtn" type="button">再开一局（换能力）</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="overlay hidden" id="resultOverlay">
+    <div class="card">
+      <div class="card-hero">
+        <div class="eyebrow" id="resultOutcomeLabel">处理结果</div>
+        <h2 id="resultTitle">结果</h2>
+        <p id="resultScoreLine">绩效 +12</p>
+      </div>
+      <div class="card-body">
+        <div class="result-story" id="resultStory"></div>
+        <div class="delta-chips" id="deltaChips"></div>
+        <div class="insight"><b>复盘</b><span id="resultInsight"></span></div>
+        <div class="result-actions"><button class="btn solid" id="nextBtn" type="button">下一件事</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastLayer"></div>
+
+<script>
+"use strict";
+var el = function(id){ return document.getElementById(id); };
+function clamp(n,a,b){ return Math.max(a, Math.min(b, n)); }
+function signed(n){ return n>0 ? "+"+n : String(n); }
+function clone(v){ return JSON.parse(JSON.stringify(v)); }
+function toast(m){ el("toastLayer").innerHTML='<div class="toast">'+m+'</div>'; setTimeout(function(){ el("toastLayer").innerHTML=""; },2200); }
+
+var METRICS = [
+  {key:"rep", label:"口碑", sub:"群众怎么看你", icon:"👍"},
+  {key:"safe", label:"安全", sub:"别出事", icon:"🛡"},
+  {key:"biz", label:"营商", sub:"老板怎么看你", icon:"🏪"},
+  {key:"net", label:"人脉", sub:"同事 · 别被甩锅", icon:"🤝"}
+];
+
+var PERSONAS = [
+  {id:"juank", icon:"🔥", name:"卷王本王", tag:"大力出奇迹", desc:"方案的口碑/安全收益 +1，但更费电（电量 −1）", mod:{rep:1, safe:1, energy:-1}},
+  {id:"moyu", icon:"🐟", name:"摸鱼圣手", tag:"四两拨千斤", desc:"省电（电量 +1），但群众觉得你有点敷衍（口碑 −1）", mod:{energy:1, rep:-1}},
+  {id:"wen", icon:"🦮", name:"稳如老狗", tag:"中庸之道", desc:"每件事多拿 2 点绩效，无副作用", mod:{score:2}}
+];
+
+var ABILITIES = [
+  {id:"stayup", icon:"🌙", name:"熬夜天赋", cost:3, desc:"你能熬，但别熬秃了。", start:{energy:12}, unlock:{tag:"night", label:"深夜应急"}},
+  {id:"sweet", icon:"🍯", name:"嘴甜话术", cost:2, desc:"见人说人话，见领导说领导爱听的。", mod:{rep:1}, unlock:{tag:"talk", label:"安抚沟通"}},
+  {id:"cdc", icon:"🏥", name:"老同学在疾控", cost:4, desc:"大学室友，现在市疾控。关键时候能摇人。", unlock:{tag:"cdc", label:"联动疾控"}},
+  {id:"drive", icon:"🚗", name:"车技在线", cost:2, desc:"外勤不靠打车，说走就走。", fieldSave:1, unlock:{tag:"drive", label:"立刻到现场"}},
+  {id:"excel", icon:"📊", name:"Excel 成神", cost:2, desc:"一份表半小时交差，领导眼里你是人才。", mod:{score:2}, unlock:{tag:"data", label:"数据台账"}},
+  {id:"drink", icon:"🍺", name:"能喝但不说", cost:2, desc:"饭局保命技，喝完还清醒。", mod:{net:1}, unlock:{tag:"wine", label:"饭局协调"}},
+  {id:"local", icon:"📍", name:"本地土著", cost:3, desc:"岚川哪条巷子都熟，认识不少熟人。", start:{budget:8}, unlock:{tag:"local", label:"本地熟人"}},
+  {id:"iron", icon:"🦾", name:"铁胃", cost:1, desc:"吃什么都不闹肚子，陪检试吃也不虚。", start:{energy:4}, unlock:{tag:"taste", label:"现场试吃"}},
+  {id:"meditate", icon:"🧘", name:"带薪养气功", cost:2, desc:"午休冥想回血，每轮结束电量 +1。", regen:1},
+  {id:"guanxi", icon:"📇", name:"副业人脉", cost:2, desc:"前同事、同学、网友都算你的人。", start:{net:5}}
+];
+
+var EVENTS = [
+  {
+    day:"第 1 天 · 上午", tag:"小事",
+    title:"领导甩来一张截图：辖区小店被投诉卫生",
+    os:"早上九点，科长在群里@你，甩来一张外卖平台截图——你辖区一家小吃店被差评「吃出头发」。这种单子说大不大说小不小。你早饭还没吃。",
+    clues:["差评是三天前的","店家是小本经营","这周已经两次类似投诉"],
+    choices:[
+      {t:"现在就去现场，顺便吃个早饭", os:"出外勤也算上班……", hint:"能查清楚、给个说法，但一上午没了",
+       e:{rep:6,safe:8,biz:-2,net:0,budget:-3,energy:-6,risk:-2,score:12},
+       r:"你到店看了看，后厨还行，是根头发落在出餐口。你让老板贴了张「今日已整改」，又把投诉回复了。老板递给你一杯豆浆：「领导，辛苦辛苦。」你喝了一口——这趟不亏，早饭有着落了。",
+       i:"小事也要闭环：到现场、看实情、给说法，别让差评变成舆情。顺便，外勤的早饭钱记得走流程。"},
+      {t:"先打电话问问，能线上解决就不跑", os:"能省则省……", hint:"快，但可能问不清楚",
+       e:{rep:2,safe:2,biz:2,net:1,budget:-1,energy:-2,risk:1,score:6},
+       r:"你打了个电话，老板连说「马上整改马上整改」。你在系统里记了一笔，事情暂时压下去了。但你心里清楚：到底改没改，其实没底。",
+       i:"线上问一句能筛掉小事，但重点对象该跑现场还是得跑。别把「已联系」当成「已解决」。"},
+      {t:"先放放，下午再说", os:"摸鱼一时爽……", hint:"省电，但这种单子拖不得",
+       e:{rep:-4,safe:-4,biz:2,net:-1,budget:0,energy:2,risk:4,score:2},
+       r:"你想着「投诉而已，下午再说」。结果中午，投诉升级成「没人管」的差评截图，被转到了领导那里。你被@了一下——摸鱼一时爽，下午火葬场。",
+       i:"摸鱼要分对象：涉食安、涉舆情的单子拖不得，能拖的是那些纯程序性的活。"},
+      {t:"开车去，午饭前就搞定", os:"有车就是快……", hint:"跟去现场一样稳，还省点油钱和时间", req:"drive", field:true,
+       e:{rep:6,safe:7,biz:-1,net:0,budget:-2,energy:-4,risk:-2,score:11},
+       r:"你开车五分钟到店，拍了几张照、让老板当场改了出餐口，又顺手把投诉回了。回所里正好赶上食堂开饭——高效，还吃上了热的。",
+       i:"能力就是底气：会开车，外勤就省一截。小事讲效率，别把时间耗在路上。"},
+      {t:"老板是二舅的同学，打个招呼", os:"熟人好办事……", hint:"关系处理，又快又省", req:"local",
+       e:{rep:6,safe:5,biz:1,net:1,budget:-1,energy:-2,risk:-1,score:8},
+       r:"你进店一报家门，老板立马认出来——「这不是二舅家那小谁吗。」话一说开，问题半小时解决，还聊出两条街坊的线索。",
+       i:"本地关系不是走捷径，是信息差。熟人网络能让你更快摸到实情，但该走的手续一样不能少。"}
+    ]
+  },
+  {
+    day:"第 1 天 · 下午", tag:"舆情",
+    title:"家长群炸了：学校食堂疑似食物中毒",
+    os:"下午三点，你的手机开始震。辖区一所小学的家长群在传「孩子吃完午饭上吐下泻，是食堂的问题」。学校说是季节性疾病。你隔着屏幕都能闻到火药味。",
+    clues:["涉及人数还在变","留样和记录是完整的","已经有家长要发抖音"],
+    choices:[
+      {t:"现在就去，拉上疾控一起查", os:"今晚别想走了……", hint:"大概率能查清、稳住人，但要烧一晚上电",
+       e:{rep:10,safe:10,biz:-2,net:4,budget:-6,energy:-10,risk:-5,score:20},
+       r:"你拉着疾控的人到学校，封样、流调、和家长群同步进展。折腾到晚上十点——是诺如病毒，不是食堂。你在家长群发了段人话，把来龙去脉说清楚。家长从「要说法」变成「辛苦了」。你瘫在工位上：今天这班，没白加。",
+       i:"这种级别，第一反应别慌也别甩锅——先控制、再查因、同步说人话。舆情最怕的不是出事，是「没人理」。"},
+      {t:"等疾控先给结论，我再动", os:"没结论先别乱动……", hint:"稳，但舆情不等人",
+       e:{rep:-5,safe:-3,biz:2,net:0,budget:-1,energy:-2,risk:3,score:4},
+       r:"你想着「没结论先别乱动」。结果两个小时里，猜测在网上发酵，家长开始质疑「监管在干嘛」。最后结论还是好的，但你被迫连夜补了一份说明——晚一步，多说十句。",
+       i:"信息不充分不是不动手的理由。先控制风险、同步已知进度，比等「完美结论」重要。"},
+      {t:"先把抖音那条劝删了", os:"堵住再说……", hint:"快，但容易火上浇油",
+       e:{rep:-8,safe:-2,biz:0,net:-2,budget:-1,energy:-3,risk:6,score:0},
+       r:"你联系了发帖的家长，好说歹说让人删了。结果删帖截图被二次传播，「监管捂嘴」的说法更响了。堵不如疏——这话你今天算是记住了。",
+       i:"没有充分证据就让人删帖，等于给谣言递刀。要说就说事实、说进度、说下一步。"},
+      {t:"直接摇人：老同学在市疾控", os:"有这关系不用白不用……", hint:"专业力量秒到位，比现协调快得多", req:"cdc",
+       e:{rep:13,safe:13,biz:-1,net:6,budget:-5,energy:-8,risk:-7,score:27},
+       r:"你给大学室友打了个电话，二十分钟后疾控的采样车就到了。有了熟人，封样、流调、出报告都快了一步。晚上八点尘埃落定，你还在家长群混了个「靠谱」的名声。",
+       i:"关键关系用在刀刃上。专业联动不是走后门，是把正确的人更快请到正确的位置。"},
+      {t:"先在家长群发段人话安抚", os:"先稳住人心……", hint:"先把火降下来，再慢慢查", req:"talk",
+       e:{rep:8,safe:2,biz:1,net:2,budget:-1,energy:-3,risk:-2,score:10},
+       r:"你先没急着查案，而是在家长群里发了段大白话：已知的、正在做的、几点给结果，一条条列清楚。群里的火气肉眼可见地降了半档，给你争取到了宝贵的调查时间。",
+       i:"会说话是本事：把「进度」和「确定的事实」讲清楚，比憋到「完美结论」再开口更能稳住人。"}
+    ]
+  },
+  {
+    day:"第 1 天 · 夜里", tag:"硬仗",
+    title:"台风要来了，农贸市场眼看要断电",
+    os:"傍晚，气象台连发两条预警。辖区最大的农贸市场地势低，暴雨可能停电，冷链里的肉和水产最多撑一小时。周边就指望这个市场供菜。领导电话里就一句：「小沈，你看着办，别出事。」",
+    clues:["冷链还能撑一小时","市场是周边主要保供","停电可能引发抢购涨价"],
+    choices:[
+      {t:"按风险排：先保冷链，再保供应", os:"今晚大概率泡汤……", hint:"又稳又对，但要协调一堆人、烧电量",
+       e:{rep:9,safe:9,biz:2,net:5,budget:-8,energy:-12,risk:-4,score:22},
+       r:"你拉上市场方和电力，把电优先给了冷链区，又组织几家摊贩统一转运。市场基本没断供，价格也没乱。夜里你站在雨里，浑身湿透，突然有点想笑：原来「别出事」这三个字，是要你一件件去盯出来的。",
+       i:"应急要把食品风险、民生供应、现场秩序放一张图上看，不能只盯一头。"},
+      {t:"先把市场关了，最安全", os:"一刀切最省心……", hint:"绝对安全，但周边要买菜的人会骂",
+       e:{rep:-4,safe:6,biz:-4,net:-2,budget:-2,energy:-4,risk:2,score:8},
+       r:"你让市场直接关门。风险是没了，可晚上周边几个小区没菜买，有人把气撒在「一刀切」上。安全是安全了，但民生这张卷子，你没答好。",
+       i:"安全措施要评估次生影响，精准处置通常优于简单停摆。"},
+      {t:"让市场方自己想办法，我盯着", os:"这种时候甩不出去……", hint:"省力，但锅甩不掉",
+       e:{rep:-7,safe:-8,biz:2,net:-3,budget:0,energy:1,risk:7,score:2},
+       r:"你跟市场方说「你们先自救」。结果几家商户为了抢那点备用电路起了争执，冷链货还是失温了。有些锅，甩是甩不掉的，它只会换个姿势砸回来。",
+       i:"重大应急状态不能只讲「主体责任」——该统筹的时候，你得站出来拍板。"},
+      {t:"你通宵盯着，把冷链扛过去", os:"拼了，今晚不睡……", hint:"硬扛，收益最高，但电量掉得最狠", req:"night",
+       e:{rep:10,safe:11,biz:1,net:4,budget:-7,energy:-14,risk:-6,score:26},
+       r:"你搬了张折叠床守在市场，每隔半小时巡一圈冷链。天快亮时，一台发电机到位，货全保住了。你红着眼、哑着嗓子，摊主塞给你一袋热包子。值不值？值。",
+       i:"能熬是种硬能力。但在现实里，通宵不是常态——该轮班要轮班，别拿身体去填坑。"},
+      {t:"自己开车送物资，不等调度", os:"车到人到……", hint:"少等一层调度，更快更稳", req:"drive", field:true,
+       e:{rep:8,safe:8,biz:2,net:3,budget:-6,energy:-10,risk:-4,score:21},
+       r:"你把自己的车开出来当运输车，把几箱保命物资和备用电源送到位。没等调度的空档，冷链保住了，还帮两个小区送了菜。",
+       i:"有车在现场就是机动力量。应急里的「快」，往往就赢在省掉一层等调度的环节。"}
+    ]
+  }
+];
+
+var POINTS = 10;
+var selectedPersona = null;
+var ownedAbilities = [];
+var state = null;
+
+function personaById(id){ for(var i=0;i<PERSONAS.length;i++){ if(PERSONAS[i].id===id) return PERSONAS[i]; } return PERSONAS[0]; }
+function abilityById(id){ for(var i=0;i<ABILITIES.length;i++){ if(ABILITIES[i].id===id) return ABILITIES[i]; } return null; }
+function hasAbility(id){ return ownedAbilities.indexOf(id) !== -1; }
+
+function renderPersonas(){
+  el("personaGrid").innerHTML = "";
+  PERSONAS.forEach(function(p){
+    var c = document.createElement("button");
+    c.type = "button";
+    c.className = "persona-card" + (selectedPersona===p.id ? " selected":"");
+    c.innerHTML = "<i>"+p.icon+"</i><b>"+p.name+"</b><span class='tag'>"+p.tag+"</span><p>"+p.desc+"</p>";
+    c.addEventListener("click", function(){ selectedPersona=p.id; el("selectedPersonaText").textContent=p.icon+" "+p.name+" · "+p.tag; el("startBtn").disabled=false; renderPersonas(); });
+    el("personaGrid").appendChild(c);
+  });
+}
+
+function remainingPoints(){ return POINTS - ownedAbilities.reduce(function(s,id){ return s + abilityById(id).cost; }, 0); }
+
+function renderShop(){
+  el("shopPoints").textContent = remainingPoints();
+  var rem = remainingPoints();
+  el("shopGrid").innerHTML = ABILITIES.map(function(a){
+    var owned = hasAbility(a.id);
+    var afford = rem >= a.cost;
+    var unlockTxt = a.unlock ? ('<span class="unlock">🔓 解锁「'+a.unlock.label+'」类选项</span>') : '';
+    var costHtml = owned ? '<b>已换</b><span class="got">✓ 已拥有</span>' : ('<b>'+a.cost+'</b><span>牛马值</span>');
+    return '<button type="button" class="ability-card'+(owned?' owned':'')+'" data-id="'+a.id+'"'+( (!owned && !afford) ? ' disabled' : '')+'>'+
+      '<span class="ability-icon">'+a.icon+'</span>'+
+      '<span class="info"><b>'+a.name+'</b>'+unlockTxt+'<p>'+a.desc+'</p></span>'+
+      '<span class="ability-cost">'+costHtml+'</span></button>';
+  }).join("");
+  el("shopGrid").querySelectorAll("[data-id]").forEach(function(b){
+    b.addEventListener("click", function(){ toggleAbility(b.getAttribute("data-id")); });
+  });
+  var owned = ownedAbilities.map(function(id){ return abilityById(id).icon+abilityById(id).name; });
+  el("ownedSummary").textContent = owned.length ? owned.join(" · ") : "还没选，两手空空就上路？";
+}
+
+function toggleAbility(id){
+  if(hasAbility(id)){ ownedAbilities.splice(ownedAbilities.indexOf(id),1); }
+  else{
+    var a = abilityById(id);
+    if(remainingPoints() < a.cost){ toast("牛马值不够了"); return; }
+    ownedAbilities.push(id);
+  }
+  renderShop();
+}
+
+function startGame(){
+  var p = personaById(selectedPersona);
+  state = {
+    persona: selectedPersona, abilities: ownedAbilities.slice(), round: 0,
+    rep:55, safe:58, biz:52, net:50, budget:60, energy:70, risk:25, score:0,
+    history: []
+  };
+  // 应用能力带来的起始底子
+  state.abilities.forEach(function(id){
+    var a = abilityById(id);
+    if(a.start){ for(var k in a.start){ state[k] = clamp(state[k] + a.start[k], 0, 100); } }
+  });
+  el("shopScreen").classList.add("hidden");
+  el("gameScreen").classList.remove("hidden");
+  el("personaLabel").textContent = "沈星 · " + p.name;
+  renderEvent();
+  renderDashboard();
+  window.scrollTo(0,0);
+}
+
+function currentEvent(){ return EVENTS[state.round]; }
+
+function renderEvent(){
+  var ev = currentEvent();
+  el("roundLabel").textContent = "第 " + (state.round+1) + " / 3 件事";
+  el("progress").style.width = (state.round/3*100) + "%";
+  el("progressText").textContent = state.round + "/3";
+  el("dayTag").textContent = ev.day + " · " + ev.tag;
+  el("eventTitle").textContent = ev.title;
+  el("eventOS").textContent = ev.os;
+  el("clues").innerHTML = "<b>研判线索</b> " + ev.clues.map(function(s){ return "<span>"+s+"</span>"; }).join("");
+  var box = el("choices");
+  box.innerHTML = "";
+  ev.choices.forEach(function(c, i){
+    var locked = c.req && !hasAbility(c.req);
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "choice" + (locked ? " locked" : (c.req ? " unlocked" : ""));
+    if(locked) btn.disabled = true;
+    var lockNote = locked ? ('<span class="req-lock">🔒 需要能力「'+abilityById(c.req).name+'」</span>') : '';
+    btn.innerHTML = '<div class="choice-key">'+["A","B","C","D","E"][i]+'</div>'+
+      '<div><b>'+c.t+'</b><span class="os">'+c.os+'</span><span class="hint">'+c.hint+'</span>'+lockNote+'</div>';
+    if(!locked) btn.addEventListener("click", function(){ applyChoice(c); });
+    box.appendChild(btn);
+  });
+}
+
+function currentMods(){
+  var m = {rep:0,safe:0,biz:0,net:0,budget:0,energy:0,risk:0,score:0};
+  var p = personaById(state.persona);
+  for(var k in p.mod){ m[k] += p.mod[k]; }
+  state.abilities.forEach(function(id){
+    var a = abilityById(id);
+    if(a.mod){ for(var k2 in a.mod){ m[k2] += a.mod[k2]; } }
+  });
+  return m;
+}
+
+function renderDashboard(){
+  el("budgetText").textContent = state.budget;
+  el("energyText").textContent = state.energy;
+  el("riskText").textContent = state.risk;
+  el("mRep").textContent = state.rep;
+  el("mSafe").textContent = state.safe;
+  el("mBiz").textContent = state.biz;
+  el("mNet").textContent = state.net;
+  el("scoreText").textContent = String(state.score).padStart(3,"0");
+  el("metrics").innerHTML = METRICS.map(function(m){
+    var v = state[m.key];
+    var cls = v<30 ? "danger" : v<50 ? "warn" : "";
+    return '<div class="m-row"><span class="ic">'+m.icon+'</span><span class="nm">'+m.label+'</span><div class="bar"><i class="'+cls+'" style="width:'+v+'%"></i></div><b>'+v+'</b></div>';
+  }).join("");
+  el("abilityChips").innerHTML = state.abilities.length ? state.abilities.map(function(id){ var a=abilityById(id); return '<span class="perk-chip">'+a.icon+' '+a.name+'</span>'; }).join("") : '<span class="empty">这局没换能力，纯靠命硬。</span>';
+  if(!state.history.length){
+    el("historyLog").innerHTML = '<div class="empty">还没干啥，先吃个早饭。</div>';
+  } else {
+    el("historyLog").innerHTML = state.history.slice().reverse().map(function(h){
+      return '<div class="log-item"><strong>'+h.title+'</strong><br>'+h.choice+' · '+h.verdict+'</div>';
+    }).join("");
+  }
+}
+
+function applyChoice(c){
+  var ev = currentEvent();
+  var e = clone(c.e);
+  // 人设 + 能力 的持续修正
+  var mods = currentMods();
+  for(var k in mods){ e[k] = (e[k]||0) + mods[k]; }
+  // 车技：外勤类选择省钱
+  if(c.field && hasAbility("drive")){ e.budget = (e.budget||0) + 1; }
+  // 应用
+  ["rep","safe","biz","net"].forEach(function(k){ state[k] = clamp(state[k] + (e[k]||0), 0, 100); });
+  state.budget = clamp(state.budget + (e.budget||0), 0, 100);
+  state.energy = clamp(state.energy + (e.energy||0), 0, 100);
+  state.risk = clamp(state.risk + (e.risk||0), 0, 100);
+  state.score += (e.score||0);
+  var net = (e.rep||0)+(e.safe||0)+(e.biz||0)+(e.net||0);
+  var verdict = net >= 6 ? "稳了" : net <= -6 ? "翻车" : "凑合";
+  state.history.push({ title: ev.title, choice: c.t, verdict: verdict });
+  showResult(c, e);
+  renderDashboard();
+  el("scoreText").textContent = String(state.score).padStart(3,"0");
+}
+
+function showResult(c, e){
+  el("resultOutcomeLabel").textContent = currentEvent().day + " · 处理完毕";
+  el("resultTitle").textContent = c.t;
+  el("resultScoreLine").textContent = "绩效 " + signed(e.score||0);
+  el("resultStory").textContent = c.r;
+  el("resultInsight").textContent = c.i;
+  var labels = {rep:"口碑",safe:"安全",biz:"营商",net:"人脉",budget:"预算",energy:"电量",risk:"背锅值",score:"绩效"};
+  var chips = [];
+  for(var k in e){
+    if(e[k] === 0) continue;
+    var cls = k==="risk" ? (e[k]>0?"down":"up") : (e[k]>0?"up":"down");
+    chips.push('<i class="'+cls+'">'+labels[k]+' '+signed(e[k])+'</i>');
+  }
+  el("deltaChips").innerHTML = chips.join("");
+  el("nextBtn").textContent = state.round >= 2 ? "下班打卡" : "下一件事";
+  el("resultOverlay").classList.remove("hidden");
+}
+
+function next(){
+  el("resultOverlay").classList.add("hidden");
+  // 带薪养气功：每轮结束回电
+  if(hasAbility("meditate")){ state.energy = clamp(state.energy + 1, 0, 100); }
+  if(state.round >= 2){ endSlice(); return; }
+  state.round += 1;
+  renderEvent();
+  renderDashboard();
+  window.scrollTo(0,0);
+}
+
+function endSlice(){
+  el("gameScreen").classList.add("hidden");
+  el("endScreen").classList.remove("hidden");
+  el("endScore").textContent = String(state.score).padStart(3,"0");
+  el("endRep").textContent = state.rep;
+  el("endRisk").textContent = state.risk;
+  window.scrollTo(0,0);
+}
+
+function reset(){
+  el("endScreen").classList.add("hidden");
+  el("opening").classList.remove("hidden");
+  selectedPersona = null;
+  ownedAbilities = [];
+  el("startBtn").disabled = true;
+  el("selectedPersonaText").textContent = "先选一个人设";
+  renderPersonas();
+  window.scrollTo(0,0);
+}
+
+el("startBtn").addEventListener("click", function(){
+  el("opening").classList.add("hidden");
+  el("shopScreen").classList.remove("hidden");
+  renderShop();
+  window.scrollTo(0,0);
+});
+el("confirmShopBtn").addEventListener("click", startGame);
+el("nextBtn").addEventListener("click", next);
+el("replayBtn").addEventListener("click", reset);
+
+renderPersonas();
+</script>
+</body>
+</html>
