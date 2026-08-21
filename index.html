@@ -177,7 +177,7 @@
   .end-hero p{margin:0;color:rgba(255,255,255,.74);font-size:14px;line-height:1.7}
   .end-body{padding:22px}
   .end-body h3{margin:0 0 10px;font-size:16px}
-  .end-score{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px}
+  .end-score{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:16px}
   .end-score div{padding:12px;border-radius:12px;background:#ebe5da;text-align:center}
   .end-score span{display:block;color:var(--ink2);font-size:12px}
   .end-score b{font:700 21px Georgia,serif}
@@ -186,6 +186,15 @@
   .end-actions{display:flex;gap:9px}
   .end-actions .btn{flex:1}
   .toast{position:fixed;left:50%;bottom:22px;z-index:150;padding:12px 16px;border-radius:12px;color:#fff;background:rgba(20,35,32,.95);box-shadow:0 10px 26px rgba(0,0,0,.2);transform:translateX(-50%);font-size:14px;animation:rise .25s ease;max-width:88%;text-align:center}
+    .grade-letter{margin:22px 0 4px;font:900 62px/.9 Georgia,serif;letter-spacing:-.03em;color:#f1cf91}
+  .grade-name{font-size:20px;font-weight:850}
+  .medal-list{display:flex;flex-wrap:wrap;gap:6px;min-height:40px;margin-bottom:14px;align-content:flex-start}
+  .medal{padding:7px 10px;border-radius:9px;color:#644816;background:var(--goldsoft);font-size:13px;font-weight:800}
+  .perk-grid{display:grid;gap:10px}
+  .perk-card{min-height:92px;padding:15px;border:1px solid var(--line);border-radius:15px;background:#fff;text-align:left}
+  .perk-card i{display:block;color:var(--red);font:normal 22px Georgia,serif}
+  .perk-card b{display:block;margin:10px 0 5px;font-size:16px}
+  .perk-card p{margin:0;color:var(--ink2);font-size:14px;line-height:1.5}
   @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms !important;transition-duration:.01ms !important}}
 </style>
 </head>
@@ -290,24 +299,21 @@
   <section id="endScreen" class="end-screen hidden">
     <div class="end-card">
       <div class="end-hero">
-        <div class="eyebrow">切片到此为止</div>
-        <h2>下班，打卡。</h2>
-        <p>这只是开头四天。你大概闻出味道了——完整版会从这里接上 24 天。</p>
+        <div class="eyebrow">年终履职评估</div>
+        <div class="grade-letter" id="gradeLetter">A</div>
+        <div class="grade-name" id="gradeName">稳健监管者</div>
+        <p id="gradeCopy">总体稳住。</p>
       </div>
       <div class="end-body">
-        <h3>这几天你攒下的绩效</h3>
         <div class="end-score">
-          <div><span>绩效</span><b id="endScore">000</b></div>
+          <div><span>最终绩效</span><b id="endScore">0000</b></div>
           <div><span>口碑</span><b id="endRep">55</b></div>
           <div><span>背锅值</span><b id="endRisk">25</b></div>
+          <div><span>均衡度</span><b id="endBalance">00</b></div>
         </div>
-        <h3>完整版还会加这些</h3>
-        <div class="next-list">
-          <div>📈 阶段末能力卡 + 年终评级（SSS~寄，写成「年终总结」味）</div>
-          <div>🗓 24 天，有起承转合、有回调、有硬仗</div>
-        </div>
+        <div class="medal-list" id="medalList"></div>
         <div class="end-actions">
-          <button class="btn solid" id="replayBtn" type="button">再开一局（换能力/换人）</button>
+          <button class="btn solid" id="replayBtn" type="button">再干一任</button>
         </div>
       </div>
     </div>
@@ -343,6 +349,19 @@
           <button class="btn ghost" id="aiOfflineBtn" type="button">使用离线事件</button>
           <button class="btn solid" id="aiGenerateBtn" type="button">生成动态事件</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay hidden" id="perkOverlay">
+    <div class="card">
+      <div class="card-hero">
+        <div class="eyebrow">阶段奖励</div>
+        <h2>选一个阶段增益</h2>
+        <p>每完成 4 个周期结算一次。</p>
+      </div>
+      <div class="card-body">
+        <div class="perk-grid" id="perkDraft"></div>
       </div>
     </div>
   </div>
@@ -514,7 +533,263 @@ var EVENTS = [
        r:"你把自己的车开出来当运输车，把几箱保命物资和备用电源送到位。没等调度的空档，冷链保住了，还帮两个小区送了菜。",
        i:"有车在现场就是机动力量。应急里的「快」，往往就赢在省掉一层等调度的环节。"}
     ]
+  },
+  {
+    tag:"特种设备",
+    title:"老旧小区电梯连续困人",
+    os:"同一小区两周困了三次人，维保单位咬死「设备还在检验期内」。业主群已经炸了，要停梯换新。",
+    clues:["电梯用了15年","救援平均14分钟","维修资金还在扯皮"],
+    choices:[
+      {t:"风险评估、精准停梯、推动更新", os:"该停的停，别一刀切……", hint:"稳，但要协调一堆人", e:{rep:8,safe:9,biz:1,net:6,budget:-10,energy:-9,risk:-5,score:18},
+       r:"你调了技术机构逐台评估，高危的先停，同时把更新改造和物联网监测一起推。业主情绪稳了，救援联动也顺了。",
+       i:"老旧电梯治理要技术评估、应急救援、资金协调、更新改造一起上，精准停比一刀切停更得人心。"},
+      {t:"小区电梯全部停用", os:"先停再说……", hint:"绝对安全，但高层老人要骂", e:{rep:-3,safe:6,biz:-5,net:-3,budget:-4,energy:-5,risk:-2,score:8},
+       r:"你把电梯全停了。风险是没了，可高层老人下楼买菜都费劲，业主把气全撒在「一刀切」上。",
+       i:"风险处置要有技术依据，精准停用比全面停用更兼顾安全与民生。"},
+      {t:"督促维保加强巡检", os:"检验合格，先观察……", hint:"省事，但连续异常拖不得", e:{rep:-6,safe:-7,biz:2,net:0,budget:0,energy:-3,risk:4,score:2},
+       r:"你让维保加频巡检。结果没两天又困了一次人，媒体找上门，你被迫连夜回应。",
+       i:"连续异常本身就是风险信号，检验合格不等于持续安全，该升级评估就得升级。"}
+    ]
+  },
+  {
+    tag:"特种设备",
+    title:"节假日游乐设施客流爆满",
+    os:"假期客流到峰值，热门设施排队两小时。运营方想延时，操作员已经连轴转得眼神发直。",
+    clues:["设备日检正常","操作员疲劳","投诉集中在排队"],
+    choices:[
+      {t:"限流轮岗，发布实时信息", os:"把人当人……", hint:"稳，但要协调", e:{rep:7,safe:8,biz:2,net:5,budget:-6,energy:-7,risk:-3,score:16},
+       r:"你强制轮岗、按承载能力限流，还把实时等候信息发出去。游客能自己调整路线，投诉少了，操作员也缓过来了。",
+       i:"客流高峰要统筹设备安全、人员状态、游客信息，把人当人看。"},
+      {t:"全面暂停热门设施", os:"零风险最省心……", hint:"安全，但现场要炸", e:{rep:-4,safe:7,biz:-6,net:-2,budget:-2,energy:-3,risk:-1,score:8},
+       r:"你让热门设施全停。安全是安全了，可现场聚集和退票纠纷一起来了。",
+       i:"安全措施也要评估次生风险，精准限流通常优于简单停运。"},
+      {t:"同意延时运行并加强巡查", os:"满足游客……", hint:"增收，但把人累垮", e:{rep:2,safe:-7,biz:5,net:0,budget:-3,energy:-8,risk:5,score:4},
+       r:"你同意延时。结果一名操作员因疲劳出现操作失误，好在没出事，但把你吓出一身汗。",
+       i:"人的状态是设备风险的重要组成，巡查不能替代合理轮岗。"}
+    ]
+  },
+  {
+    tag:"特种设备",
+    title:"发现跨区域非法充装气瓶线索",
+    os:"一批来路不明的气瓶，流向三个区县，电子标签数据异常。单点证据不足，但这线索烫手。",
+    clues:["气瓶或超500只","跨3个区县","夜间流动充装"],
+    choices:[
+      {t:"组建联合专班全链追查", os:"别只打末端……", hint:"最彻底，但要跨区协同", e:{rep:5,safe:10,biz:-1,net:7,budget:-9,energy:-11,risk:-4,score:19},
+       r:"你串起标签、运输、充装、销售数据，跨区同步收网，一条非法充装链被连根拔起。",
+       i:"跨区域链条化违法要数据研判+区域协作，只打末端等于打草惊蛇。"},
+      {t:"先处罚已发现的经营点", os:"有证据先办……", hint:"快，但上游会跑", e:{rep:1,safe:2,biz:0,net:-2,budget:-3,energy:-4,risk:2,score:5},
+       r:"你把末端经营点罚了。结果上游充装源嗅到风声，换了个渠道继续干。",
+       i:"只处理末端容易打草惊蛇，要从风险链条整体研判。"},
+      {t:"交属地分别调查", os:"分头快……", hint:"省力，但线索会碎", e:{rep:-1,safe:1,biz:0,net:-5,budget:-1,energy:-3,risk:3,score:3},
+       r:"你按线索地分办，结果各地手里都是碎片，凑不出一条完整证据链。",
+       i:"跨区域问题需要统一指挥、信息共享、证据标准，分头查会漏。"}
+    ]
+  },
+  {
+    tag:"执法",
+    title:"小餐饮店首次轻微违法",
+    os:"一家老店标签不规范，情节轻微没后果，老板愿意当场改。这种案子，罚不罚都有人盯着。",
+    clues:["首次同类问题","货值很低","可当场整改"],
+    choices:[
+      {t:"适用小过快处并跟踪整改", os:"该宽则宽……", hint:"讲温度，但要闭环", e:{rep:8,safe:4,biz:4,net:2,budget:-2,energy:-4,risk:-2,score:10},
+       r:"你依法快速办理、给了张合规清单，又约了复查。老板当天改完，周边商户也照着自查起来。",
+       i:"宽严相济的前提是依法准确裁量，并通过整改复查闭环，别一罚了之。"},
+      {t:"按一般程序从严处罚", os:"立个规矩……", hint:"有震慑，但太重", e:{rep:-6,safe:5,biz:-6,net:0,budget:2,energy:-5,risk:0,score:4},
+       r:"处罚依法作出，可老板觉得尺度过重，周边小店也人心惶惶。",
+       i:"处罚力度应与违法情节、危害后果、整改情况相适应。"},
+      {t:"口头教育后不再处理", os:"小店不易……", hint:"省事，但没闭环", e:{rep:2,safe:-6,biz:3,net:-2,budget:1,energy:1,risk:2,score:3},
+       r:"你口头提醒了几句。结果老板没当回事，类似问题很快又冒出来。",
+       i:"有温度的执法仍需规范程序和可追溯的整改闭环。"}
+    ]
+  },
+  {
+    tag:"执法",
+    title:"头部主播涉嫌虚假宣传",
+    os:"本地头部主播说一款普通食品能治病，直播间卖了数万单。平台说那是「个人体验表达」。",
+    clues:["直播回放快过期","商品跨区发货","投诉持续增加"],
+    choices:[
+      {t:"快速固证并跨区域协查", os:"先把证据锁死……", hint:"最对，但要动作快", e:{rep:9,safe:6,biz:0,net:7,budget:-8,energy:-10,risk:-4,score:18},
+       r:"你连夜保全了直播、订单、投流数据，又跨区核查商家和平台责任。证据链完整，平台乖乖下架退款。",
+       i:"网络案件要抓电子证据窗口，围绕多主体责任穿透调查。"},
+      {t:"先约谈主播公开道歉", os:"先平息舆论……", hint:"快，但证据会灭失", e:{rep:1,safe:-1,biz:2,net:0,budget:-2,energy:-3,risk:3,score:4},
+       r:"主播道歉后把相关视频删了。结果关键交易证据也随之灭失，后续追责成了无米之炊。",
+       i:"风险沟通不能替代依法调查，证据保全应先于公开处置。"},
+      {t:"只处罚商品经营者", os:"商家是源头……", hint:"省事，但漏了主播平台", e:{rep:-4,safe:1,biz:0,net:-3,budget:-3,energy:-5,risk:3,score:3},
+       r:"你只查了商家。结果主播换个话术、平台换个马甲，同类问题又在别的直播间冒头。",
+       i:"平台经济的违法传播常由多主体共同完成，需区分追究。"}
+    ]
+  },
+  {
+    tag:"执法",
+    title:"低价竞争引发行业内卷举报",
+    os:"产业带企业举报同行低于成本卖货。行业协会想让你直接设个「最低指导价」。",
+    clues:["成本差异大","部分低价是技术降本","协会方案可能违法"],
+    choices:[
+      {t:"成本行为调查并发布合规指引", os:"别一刀切……", hint:"分得清，但要费心", e:{rep:5,safe:0,biz:7,net:5,budget:-5,energy:-7,risk:-2,score:14},
+       r:"你调查后制止了虚假比价和商业诋毁，同时给创新降本的企业留了空间。行业秩序回来了，也没误伤好人。",
+       i:"治理内卷要维护公平竞争秩序，不能简单限制正常价格竞争。"},
+      {t:"支持协会制定最低指导价", os:"稳住价格……", hint:"快，但涉嫌违法", e:{rep:-5,safe:0,biz:-7,net:1,budget:-1,energy:-2,risk:4,score:2},
+       r:"价格是稳了，可这规则涉嫌排除限制竞争，很快招来新投诉。",
+       i:"行业自律不得突破公平竞争边界，价格协同会损害消费者和创新企业。"},
+      {t:"完全交由市场自行调节", os:"市场说了算……", hint:"省事，但乱象会蔓延", e:{rep:-3,safe:0,biz:-3,net:-3,budget:2,energy:2,risk:2,score:4},
+       r:"你决定不介入。结果虚假宣传和恶意诋毁继续扩散，优质企业被挤得难受。",
+       i:"尊重市场不等于放弃监管，应依法纠治扰乱公平竞争秩序的行为。"}
+    ]
+  },
+  {
+    tag:"知产",
+    title:"人形机器人企业急需专利快保护",
+    os:"初创企业要出国参展，核心关节控制方案还没授权，担心技术展示后被模仿。离展会只剩90天。",
+    clues:["重点产业方向","申请文件质量差","距展会90天"],
+    choices:[
+      {t:"预审辅导与保护组合设计", os:"质量速度都要……", hint:"最对，但要花力气", e:{rep:5,safe:1,biz:10,net:5,budget:-8,energy:-9,risk:-2,score:19},
+       r:"你组织了快速预审、专利导航和商业秘密保护同步服务。核心专利进了快通道，企业出海也更有底气。",
+       i:"创新保护要看技术、市场与出海计划形成组合策略，不能只看单件专利。"},
+      {t:"帮所有申请走快速通道", os:"速度优先……", hint:"快，但质量差会退回", e:{rep:-2,safe:0,biz:6,net:-1,budget:-5,energy:-7,risk:1,score:8},
+       r:"部分申请因为质量不足被退回，反而挤占了预审资源，企业更急了。",
+       i:"快速预审要以高质量申请为基础，前置辅导能减少无效占用。"},
+      {t:"建议展会后再完善申请", os:"别仓促提交……", hint:"稳，但会错过时机", e:{rep:-4,safe:0,biz:-7,net:0,budget:1,energy:2,risk:2,score:2},
+       r:"企业听你的等到展会后再申请。结果展会上被相似产品抢先展示，后续维权难上加难。",
+       i:"专利布局强调时机，要在质量与速度之间找平衡。"}
+    ]
+  },
+  {
+    tag:"知产",
+    title:"岚川品牌在海外遭遇抢注",
+    os:"单项冠军企业要进西陆市场，发现核心商标被当地代理商抢注，首批订单眼看要黄。",
+    clues:["对方提出高价转让","企业有长期使用证据","海外观察点可支持"],
+    choices:[
+      {t:"启动海外协同维权机制", os:"打有准备的仗……", hint:"专业，但要动用海外资源", e:{rep:8,safe:0,biz:9,net:6,budget:-9,energy:-10,risk:-3,score:19},
+       r:"你联动海外工作站、当地律师和行业组织，企业及时提交异议，用可控成本达成了市场进入安排。",
+       i:"涉外知产保护要前端预警、专业法律支持和跨境资源协同。"},
+      {t:"建议支付转让费尽快拿回", os:"保订单要紧……", hint:"快，但会助长抢注", e:{rep:-2,safe:0,biz:4,net:0,budget:-2,energy:-2,risk:2,score:5},
+       r:"企业按期进入市场，可这笔高额转让费，反而让更多抢注者盯上了岚川品牌。",
+       i:"商业和解可以评估，但公共服务还要帮企业形成长期预警能力。"},
+      {t:"主要通过国内行政手段处理", os:"国内先查……", hint:"省事，但治不了境外", e:{rep:-5,safe:0,biz:-6,net:-3,budget:-3,energy:-4,risk:2,score:2},
+       r:"国内调查没能解决境外权利冲突，企业错过首批市场窗口。",
+       i:"知识产权有地域性，海外纠纷要在相应法域内用规则。"}
+    ]
+  },
+  {
+    tag:"知产",
+    title:"高校专利数量多、转化率低",
+    os:"高校专利一大堆，企业却说成熟度不够、对不上需求。校方想办个千人推介会。",
+    clues:["近半专利3年无转化","企业要细分工艺","有概念验证平台可合作"],
+    choices:[
+      {t:"按产业需求盘点并做中试", os:"先筛后验……", hint:"费劲，但真正能转化", e:{rep:4,safe:0,biz:10,net:6,budget:-9,energy:-9,risk:-2,score:19},
+       r:"你先筛高潜专利，引入概念验证、产业导师和分阶段许可。一批专利验证后顺利进了企业。",
+       i:"转化关键是衔接技术供给、产业需求和验证资金，不是堆推介会。"},
+      {t:"举办千项专利集中推介会", os:"造个声势……", hint:"热闹，但成交少", e:{rep:2,safe:0,biz:2,net:2,budget:-6,energy:-6,risk:0,score:7},
+       r:"活动很热闹，可会后真正进入谈判的项目寥寥无几。",
+       i:"展示有价值，但缺需求匹配和技术验证时，转化成效有限。"},
+      {t:"以转化数量作为考核指标", os:"硬指标倒逼……", hint:"快，但会形式化", e:{rep:-3,safe:0,biz:-2,net:-3,budget:-2,energy:-3,risk:1,score:4},
+       r:"低价短期许可数量上去了，高价值成果的转化质量反而没起色。",
+       i:"单一数量指标易形式化，应同时看转化价值与持续合作。"}
+    ]
+  },
+  {
+    tag:"平台",
+    title:"平台被投诉大数据杀熟",
+    os:"消费者甩来不同账号的价格截图，怀疑平台对老用户抬价。平台解释是「优惠与测试策略不同」。",
+    clues:["价格差异确实存在","算法规则不透明","投诉在社交平台疯传"],
+    choices:[
+      {t:"算法与规则穿透式核查", os:"查到底层……", hint:"专业，但要技术审计", e:{rep:9,safe:2,biz:2,net:6,budget:-9,energy:-10,risk:-4,score:18},
+       r:"你调取定价逻辑、用户分组和优惠记录，引入技术审计。核查发现部分展示规则易误导，平台完成整改并建了解释机制。",
+       i:"算法治理既要看结果差异，也要核查规则、数据和知情选择权。"},
+      {t:"要求平台统一所有用户价格", os:"先消除差异……", hint:"快，但会误伤正常促销", e:{rep:3,safe:1,biz:-8,net:-2,budget:-2,energy:-3,risk:1,score:5},
+       r:"争议暂时平息，可正常的分时促销和新客优惠也被一刀切了，商家怨声载道。",
+       i:"价格差异不必然违法，监管要基于事实和规则，别抹平正常竞争。"},
+      {t:"发布说明支持平台解释", os:"替平台背书……", hint:"省事，但会被反噬", e:{rep:-9,safe:-2,biz:4,net:-3,budget:1,energy:1,risk:5,score:0},
+       r:"你在事实未明前替平台站了台。结果更多消费者甩出证据，舆论一边倒质疑你偏袒。",
+       i:"事实未明前不宜替企业背书，风险沟通要保持客观可验证。"}
+    ]
+  },
+  {
+    tag:"平台",
+    title:"网约配送员反映权益与安全",
+    os:"骑手反映算法压缩配送时间，小区又限制进入，闯红灯和投诉一起涨。",
+    clues:["超时罚款挂差评","多部门职责交叉","平台愿开放部分数据"],
+    choices:[
+      {t:"多方协商并试点友好场景", os:"把关键小事做成制度……", hint:"费心，但治本", e:{rep:8,safe:6,biz:4,net:8,budget:-8,energy:-9,risk:-4,score:20},
+       r:"你推动平台优化算法，联动物业设取餐点，还建了骑手反馈机制。试点区域的效率和交通安全一起变好了。",
+       i:"新就业群体治理要平台、社区、物业、部门共同参与，把关键小事做成制度安排。"},
+      {t:"只要求平台延长配送时间", os:"抓主要矛盾……", hint:"直接，但线下问题还在", e:{rep:3,safe:3,biz:-2,net:1,budget:-2,energy:-3,risk:2,score:6},
+       r:"平台调整了时限，可小区进门难这些线下问题没解决，骑手还是超时。",
+       i:"算法是重要环节，复杂场景还需线上规则与线下设施协同。"},
+      {t:"开展骑手交通违法专项教育", os:"管好个人……", hint:"省事，但没触及根源", e:{rep:-5,safe:1,biz:0,net:-3,budget:-3,energy:-4,risk:2,score:3},
+       r:"教育做完了，骑手却说「没解决时间压力」，闯红灯照旧。",
+       i:"个体行为治理要与平台规则、场景约束、权益保障一起考虑。"}
+    ]
+  },
+  {
+    tag:"平台",
+    title:"跨境电商遭遇海外合规退货",
+    os:"一批智能小家电因认证标识不符被集中退货，同行企业也慌了。",
+    clues:["涉及金额较大","目标市场规则刚更新","中小企业合规能力差"],
+    choices:[
+      {t:"启动出海第一课集成服务", os:"从个案提炼共性……", hint:"费劲，但惠及全产业带", e:{rep:6,safe:3,biz:10,net:7,budget:-9,energy:-10,risk:-3,score:20},
+       r:"你组织了标准比对、认证辅导、商标预警和产业带风险通报。涉事企业完成整改，同行也提前调了产品标签。",
+       i:"企业出海风险跨标准、认证、知产等领域，需要集成式公共服务。"},
+      {t:"重点帮涉事企业处理退货", os:"先救眼前……", hint:"快，但治标", e:{rep:2,safe:1,biz:4,net:-1,budget:-5,energy:-6,risk:1,score:7},
+       r:"单个企业的问题解决了，可同类退货很快在产业带里再次发生。",
+       i:"个案处置要同步提炼共性风险，形成面向产业的预警服务。"},
+      {t:"提示企业自行购买专业服务", os:"这是企业责任……", hint:"省事，但小微扛不住", e:{rep:-5,safe:0,biz:-7,net:-3,budget:2,energy:2,risk:2,score:2},
+       r:"头部企业能自己应付，可大量小微企业因成本原因继续冒险出口。",
+       i:"企业担主责，但公共服务仍可通过规则信息降低制度成本。"}
+    ]
+  },
+  {
+    tag:"综合",
+    title:"制造企业反映多头重复检查",
+    os:"企业说同一批生产记录被三个条线先后查看。各检查都有法定依据，但企业被烦透了。",
+    clues:["企业信用良好","两项可合并","一项高风险必须现场"],
+    choices:[
+      {t:"制定联合计划综合查一次", os:"一次进场查完……", hint:"精准，但要内部协调", e:{rep:7,safe:4,biz:7,net:6,budget:-4,energy:-5,risk:-3,score:16},
+       r:"你整合了检查人员和清单，一次进场完成多项检查，高风险也没漏。企业负担降了，还夸你高效。",
+       i:"规范检查不是少检查，而是以风险为导向提高精准度和集成度。"},
+      {t:"全部改为书面检查", os:"别进场了……", hint:"企业舒服，但高风险会漏", e:{rep:3,safe:-7,biz:6,net:2,budget:1,energy:2,risk:2,score:6},
+       r:"企业体验好了，可一个高风险环节的现场异常，书面材料里根本看不出来。",
+       i:"非现场监管有适用边界，高风险事项仍需现场核验。"},
+      {t:"维持分线检查并加强解释", os:"各查各的……", hint:"省事，但企业不买账", e:{rep:-5,safe:4,biz:-5,net:-3,budget:-1,energy:-4,risk:2,score:4},
+       r:"检查都依法完成了，可企业获得感没改善，重复取证的问题也没解决。",
+       i:"综合执法要打通内部壁垒，不能把协调成本转嫁给企业。"}
+    ]
+  },
+  {
+    tag:"综合",
+    title:"一项亮点工作数据口径争议",
+    os:"年度总结快定稿，一项数据特别亮眼，但业务处室和基层的统计口径对不上。",
+    clues:["报送窗口今天关","口径相差约18%","原始台账可追溯"],
+    choices:[
+      {t:"暂缓报送、统一口径如实上报", os:"数据不能糊弄……", hint:"稳，但要顶住压力", e:{rep:8,safe:1,biz:2,net:5,budget:-2,energy:-6,risk:-2,score:14},
+       r:"你组织业务、统计和基层一起核验。最终数据略低，但经得起追溯，统计规则也顺手完善了。",
+       i:"实事求是是数据工作的底线，数据质量本身就是治理质量。"},
+      {t:"采用较高口径并补充说明", os:"先保报送……", hint:"快，但经不起查", e:{rep:-5,safe:0,biz:3,net:-2,budget:0,energy:-2,risk:3,score:4},
+       r:"材料按时交了，可上级抽查发现口径可比性不足，要求重新核算。",
+       i:"备注不能替代统一口径，关键数据要有清晰定义和一致来源。"},
+      {t:"取两个口径的平均值", os:"折中省事……", hint:"快，但没依据", e:{rep:-8,safe:0,biz:0,net:-3,budget:0,energy:-1,risk:3,score:2},
+       r:"平均值缺乏统计依据，复盘时你解释不清数据来源。",
+       i:"统计不能靠折中，口径冲突要回到指标定义和原始事实。"}
+    ]
+  },
+  {
+    tag:"综合",
+    title:"大型节庆活动供餐保障",
+    os:"三天后大型活动，集中供餐超三千人，承办方却刚换了一家食材供应商。",
+    clues:["供餐规模超3000人","新供应商未全链评估","高温增加冷链压力"],
+    choices:[
+      {t:"全链评估并实战演练", os:"把风险前移……", hint:"最稳，但要烧电量", e:{rep:7,safe:10,biz:1,net:6,budget:-10,energy:-11,risk:-5,score:20},
+       r:"你核查了供应商、菜单、运输、留样和应急预案，又现场演练了一遍协同处置。供应链风险被提前纠正，活动供餐平稳。",
+       i:"重大活动保障要把风险控制前移，用清单、演练、驻点形成全链闭环。"},
+      {t:"重点检查活动现场后厨", os:"抓最直观的……", hint:"省事，但会漏链条", e:{rep:2,safe:2,biz:1,net:-2,budget:-4,energy:-5,risk:1,score:6},
+       r:"现场后厨总体规范，可运输途中一次冷链温度异常险些没被发现。",
+       i:"后厨只是链条一环，重大保障必须覆盖采购、运输、储存、加工和应急。"},
+      {t:"要求承办方签署安全承诺书", os:"压实主体责任……", hint:"省事，但承诺书挡不住风险", e:{rep:-4,safe:-8,biz:4,net:-2,budget:2,energy:2,risk:5,score:2},
+       r:"承诺书按时签了，可新供应商的冷链短板根本没被排查，隐患一直藏着。",
+       i:"压实主体责任需要制度、能力和监督支撑，承诺书不能替代风险核查。"}
+    ]
   }
+
 ];
 
 var OFFLINE_EVENTS = [
@@ -588,10 +863,18 @@ var OFFLINE_EVENTS = [
   }
 ];
 
+var STAGE_PERKS = [
+  {id:"fund", icon:"💰", name:"机动经费", desc:"立即补充 15 点预算"},
+  {id:"energy", icon:"🔋", name:"队伍休整", desc:"立即恢复 15 点电量"},
+  {id:"boost", icon:"📈", name:"阶段提振", desc:"未来 4 个周期口碑/安全收益 +2"}
+];
+
 function buildDeck(){
   var deck = [];
-  EVENTS.forEach(function(e){ deck.push(clone(e)); });
-  deck.push({ aiPending:true, title:"未知事件", os:"", clues:[], choices:[] });
+  for(var stage=0; stage<6; stage++){
+    for(var k=0;k<3;k++){ deck.push(clone(EVENTS[stage*3 + k])); }
+    deck.push({ aiPending:true, title:"未知事件", os:"", clues:[], choices:[] });
+  }
   return deck;
 }
 
@@ -722,7 +1005,7 @@ function startGame(){
   state = {
     persona: selectedPersona, abilities: ownedAbilities.slice(), team: team.slice(), round: 0, deck: buildDeck(),
     rep:55, safe:58, biz:52, net:50, budget:60, energy:70, risk:25, score:0,
-    history: []
+    history: [], perks: [], boostRounds: 0, terminated: false
   };
   state.abilities.forEach(function(id){
     var a = abilityById(id);
@@ -741,11 +1024,11 @@ function currentEvent(){ return state.deck[state.round]; }
 function renderEvent(){
   var ev = currentEvent();
   var total = state.deck.length;
-  el("roundLabel").textContent = "第 " + (state.round+1) + " / " + total + " 件事";
+  el("roundLabel").textContent = "第 " + (state.round+1) + " / " + total + " 天";
   el("progress").style.width = (state.round/total*100) + "%";
   el("progressText").textContent = state.round + "/" + total;
   if(ev.aiPending){
-    el("dayTag").textContent = "第 1 天 · 随机";
+    el("dayTag").textContent = "第 " + (state.round+1) + " 天 · 随机";
     el("eventTitle").textContent = "未知事件";
     el("eventOS").textContent = "抵达本周期后生成。AI 会按你当前的人设、队伍和局势，生成一个贴合语气的随机事件。";
     el("clues").innerHTML = "<b>研判线索</b> <span>事件尚未生成</span>";
@@ -759,7 +1042,7 @@ function renderEvent(){
     renderDashboard();
     return;
   }
-  el("dayTag").textContent = ev.day + " · " + ev.tag;
+  el("dayTag").textContent = "第 " + (state.round+1) + " 天 · " + ev.tag;
   el("eventTitle").textContent = ev.title;
   el("eventOS").textContent = ev.os;
   el("clues").innerHTML = "<b>研判线索</b> " + ev.clues.map(function(s){ return "<span>"+s+"</span>"; }).join("");
@@ -792,6 +1075,7 @@ function currentMods(){
     if(l && l.mod){ for(var k3 in l.mod){ m[k3] += l.mod[k3]; } }
   });
   activeBonds().forEach(function(b){ for(var k4 in b.mod){ m[k4] += b.mod[k4]; } });
+  if(state.boostRounds > 0){ m.rep += 2; m.safe += 2; }
   return m;
 }
 
@@ -835,6 +1119,7 @@ function applyChoice(c){
   state.energy = clamp(state.energy + (e.energy||0), 0, 100);
   state.risk = clamp(state.risk + (e.risk||0), 0, 100);
   state.score += (e.score||0);
+  state.terminated = state.rep <= 15 || state.safe <= 15 || state.biz <= 15 || state.net <= 15 || state.risk >= 90;
   var net = (e.rep||0)+(e.safe||0)+(e.biz||0)+(e.net||0);
   var verdict = net >= 6 ? "稳了" : net <= -6 ? "翻车" : "凑合";
   state.history.push({ title: ev.title, choice: c.t, verdict: verdict });
@@ -857,18 +1142,45 @@ function showResult(c, e){
     chips.push('<i class="'+cls+'">'+labels[k]+' '+signed(e[k])+'</i>');
   }
   el("deltaChips").innerHTML = chips.join("");
-  el("nextBtn").textContent = state.round >= state.deck.length - 1 ? "下班打卡" : "下一件事";
+  var _stageEnd = [3,7,11,15,19].indexOf(state.round) !== -1;
+  el("nextBtn").textContent = (state.terminated || state.round >= state.deck.length - 1) ? "查看年终总结" : (_stageEnd ? "领取阶段奖励" : "下一件事");
   el("resultOverlay").classList.remove("hidden");
 }
 
 function next(){
   el("resultOverlay").classList.add("hidden");
   if(hasAbility("meditate")){ state.energy = clamp(state.energy + 1, 0, 100); }
-  if(state.round >= state.deck.length - 1){ endSlice(); return; }
+  if(state.boostRounds > 0) state.boostRounds -= 1;
+  if(state.terminated || state.round >= state.deck.length - 1){ endYear(); return; }
+  if([3,7,11,15,19].indexOf(state.round) !== -1){ openPerkDraft(); return; }
+  advanceRound();
+}
+
+function advanceRound(){
   state.round += 1;
   renderEvent();
   renderDashboard();
   window.scrollTo(0,0);
+}
+
+function openPerkDraft(){
+  el("perkDraft").innerHTML = "";
+  STAGE_PERKS.forEach(function(p){
+    var btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "perk-card";
+    btn.innerHTML = "<i>"+p.icon+"</i><b>"+p.name+"</b><p>"+p.desc+"</p>";
+    btn.addEventListener("click", function(){
+      state.perks.push(p.id);
+      if(p.id === "fund") state.budget = clamp(state.budget + 15, 0, 100);
+      if(p.id === "energy") state.energy = clamp(state.energy + 15, 0, 100);
+      if(p.id === "boost") state.boostRounds = 4;
+      el("perkOverlay").classList.add("hidden");
+      advanceRound();
+    });
+    el("perkDraft").appendChild(btn);
+  });
+  el("perkOverlay").classList.remove("hidden");
 }
 
 function buildAiPrompt(){
@@ -978,12 +1290,47 @@ function replaceWithOfflineEvent(msg){
   toast(msg || "已切换离线事件");
 }
 
-function endSlice(){
-  el("gameScreen").classList.add("hidden");
-  el("endScreen").classList.remove("hidden");
-  el("endScore").textContent = String(state.score).padStart(3,"0");
+function gradeForState(){
+  var min = Math.min(state.rep, state.safe, state.biz, state.net);
+  if(state.terminated || state.score < 160) return {letter:"寄！", name:"任期崩盘", copy:"红线、风险或资源链条失守。明年……换个姿势再来。"};
+  if(state.score >= 420 && min >= 65 && state.risk <= 20) return {letter:"SSS", name:"食安传说", copy:"资源、队伍、风险全压住，年度政绩拉满，全科室都服你。"};
+  if(state.score >= 360 && min >= 58 && state.risk <= 35) return {letter:"SS", name:"王牌科室", copy:"大多数硬仗稳稳落地，队伍状态也守住了。"};
+  if(state.score >= 300 && min >= 50 && state.risk <= 50) return {letter:"S", name:"年度尖兵", copy:"全年任务完成，还扛住了多轮随机事件。"};
+  if(state.score >= 240 && min >= 45) return {letter:"A", name:"稳健监管者", copy:"总体稳住，但还有资源或指标短板。"};
+  if(state.score >= 180) return {letter:"B", name:"一线行动者", copy:"任务基本完成，后半程明显吃紧。"};
+  return {letter:"C", name:"勉强交卷", copy:"守住了任期，政绩与资源配置还得再练。"};
+}
+
+function finalBalance(){
+  var vals = [state.rep, state.safe, state.biz, state.net];
+  return clamp(100 - (Math.max.apply(null, vals) - Math.min.apply(null, vals)) - Math.round(state.risk * .25), 0, 100);
+}
+
+function computeMedals(){
+  var medals = [];
+  if(state.safe >= 90) medals.push("安全卫士");
+  if(state.rep >= 90) medals.push("民生温度");
+  if(state.biz >= 90) medals.push("改革先锋");
+  if(state.net >= 90) medals.push("协同破壁者");
+  if(state.score >= 400) medals.push("政绩标兵");
+  if(state.risk <= 25) medals.push("风险清零者");
+  if(state.team.length >= 3 && activeBonds().length >= 1) medals.push("羁绊成队");
+  return medals;
+}
+
+function endYear(){
+  var grade = gradeForState();
+  el("gradeLetter").textContent = grade.letter;
+  el("gradeName").textContent = grade.name;
+  el("gradeCopy").textContent = grade.copy;
+  el("endScore").textContent = String(state.score).padStart(4,"0");
   el("endRep").textContent = state.rep;
   el("endRisk").textContent = state.risk;
+  el("endBalance").textContent = finalBalance();
+  var medals = computeMedals();
+  el("medalList").innerHTML = medals.length ? medals.map(function(m){ return '<span class="medal">◆ '+m+'</span>'; }).join("") : '<span class="empty">本任没解锁勋章，换个玩法再来。</span>';
+  el("gameScreen").classList.add("hidden");
+  el("endScreen").classList.remove("hidden");
   window.scrollTo(0,0);
 }
 
